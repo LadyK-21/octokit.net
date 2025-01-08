@@ -21,6 +21,18 @@ namespace Octokit
 
             throw new ArgumentNullException(name);
         }
+        
+        /// <summary>
+        /// Checks an argument to ensure it isn't null or the default value.
+        /// </summary>
+        /// <param name = "value">The argument value to check</param>
+        /// <param name = "name">The name of the argument</param>
+        public static void ArgumentNotNullOrDefault<T>([ValidatedNotNull]T value, string name)
+        {
+            if (value != null && !EqualityComparer<T>.Default.Equals(value, default)) return;
+
+            throw new ArgumentNullException(name);
+        }
 
         /// <summary>
         /// Checks a string argument to ensure it isn't null or empty.
@@ -51,6 +63,20 @@ namespace Octokit
         }
 
         /// <summary>
+        /// Checks an integer argument to ensure it is a positive value.
+        /// </summary>
+        /// <param name = "value">The argument value to check</param>
+        /// <param name = "name">The name of the argument</param>
+        public static void GreaterThanZero([ValidatedNotNull] int value, string name)
+        {
+            ArgumentNotNull(value, name);
+
+            if (value > 0) return;
+
+            throw new ArgumentException("Value must be greater than zero", name);
+        }
+
+        /// <summary>
         /// Checks an enumerable argument to ensure it isn't null or empty.
         /// </summary>
         /// <param name = "value">The argument value to check</param>
@@ -61,6 +87,11 @@ namespace Octokit
             if (Enumerable.Any(value)) return;
 
             throw new ArgumentException("List cannot be empty", name);
+        }
+
+        public static void ApiOptionsNotNull(ref ApiOptions options)
+        {
+            options = options ?? ApiOptions.None;
         }
     }
 

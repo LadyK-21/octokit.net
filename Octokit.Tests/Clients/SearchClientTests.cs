@@ -738,6 +738,29 @@ namespace Octokit.Tests.Clients
 
                 Assert.Contains("topics:<=2", request.MergedQualifiers());
             }
+
+            [Fact]
+            public void TestingTheCustomPropertiesQualifier()
+            {
+                var request = new SearchRepositoriesRequest("github");
+                request.CustomProperties = new Dictionary<string, string> { { "custom", "value" } };
+
+                Assert.Contains("props.custom:value", request.MergedQualifiers());
+            }
+
+            [Fact]
+            public void TestingMultipleCustomPropertiesQualifiers()
+            {
+                var request = new SearchRepositoriesRequest("github");
+                request.CustomProperties = new Dictionary<string, string> {
+                    { "custom_one", "value_one" },
+                    { "custom_two", "value_two" }
+                };
+
+                var merged = request.MergedQualifiers();
+                Assert.Contains("props.custom_one:value_one", merged);
+                Assert.Contains("props.custom_two:value_two", merged);
+            }
         }
 
         public class TheSearchIssuesMethod
@@ -998,7 +1021,7 @@ namespace Octokit.Tests.Clients
 
                 connection.Received().Get<SearchIssuesResult>(
                     Arg.Is<Uri>(u => u.ToString() == "search/issues"),
-                    Arg.Is<Dictionary<string, string>>(d => d["q"] == "something+label:\"bug\""));
+                    Arg.Is<Dictionary<string, string>>(d => d["q"] == "something+label:bug"));
             }
 
             [Fact]
@@ -1013,7 +1036,7 @@ namespace Octokit.Tests.Clients
 
                 connection.Received().Get<SearchIssuesResult>(
                     Arg.Is<Uri>(u => u.ToString() == "search/issues"),
-                    Arg.Is<Dictionary<string, string>>(d => d["q"] == "something+label:\"bug\"+label:\"feature\""));
+                    Arg.Is<Dictionary<string, string>>(d => d["q"] == "something+label:bug+label:feature"));
             }
 
             [Fact]
@@ -1596,7 +1619,7 @@ namespace Octokit.Tests.Clients
                 connection.Received().Get<SearchIssuesResult>(
                     Arg.Is<Uri>(u => u.ToString() == "search/issues"),
                     Arg.Is<Dictionary<string, string>>(d => d["q"] ==
-                        "something+label:\"bug\"+user:alfhenrik+repo:octokit/octokit.net"));
+                        "something+label:bug+user:alfhenrik+repo:octokit/octokit.net"));
             }
         }
 

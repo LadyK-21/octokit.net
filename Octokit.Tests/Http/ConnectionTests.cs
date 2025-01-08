@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
+using Octokit.Caching;
 using Octokit.Internal;
 using Xunit;
 
@@ -180,7 +181,7 @@ namespace Octokit.Tests.Http
             }
 
             [Fact]
-            public async Task ThrowsRateLimitExceededExceptionForForbidderResponse()
+            public async Task ThrowsRateLimitExceededExceptionForForbiddenResponse()
             {
                 var httpClient = Substitute.For<IHttpClient>();
                 var response = CreateResponse(
@@ -199,6 +200,28 @@ namespace Octokit.Tests.Http
                     () => connection.GetResponse<string>(new Uri("endpoint", UriKind.Relative)));
 
                 Assert.Equal("API rate limit exceeded. See http://developer.github.com/v3/#rate-limiting for details.",
+                    exception.Message);
+            }
+
+            [Fact]
+            public async Task ThrowsSecondaryRateLimitExceededExceptionForForbiddenResponse()
+            {
+                var httpClient = Substitute.For<IHttpClient>();
+                var response = CreateResponse(
+                    HttpStatusCode.Forbidden,
+                    "{\"message\":\"You have exceeded a secondary rate limit. Please wait a few minutes before you try again.\"}");
+
+                httpClient.Send(Args.Request, Args.CancellationToken).Returns(Task.FromResult(response));
+                var connection = new Connection(new ProductHeaderValue("OctokitTests"),
+                    _exampleUri,
+                    Substitute.For<ICredentialStore>(),
+                    httpClient,
+                    Substitute.For<IJsonSerializer>());
+
+                var exception = await Assert.ThrowsAsync<SecondaryRateLimitExceededException>(
+                    () => connection.GetResponse<string>(new Uri("endpoint", UriKind.Relative)));
+
+                Assert.Equal("You have exceeded a secondary rate limit. Please wait a few minutes before you try again.",
                     exception.Message);
             }
 
@@ -390,6 +413,116 @@ namespace Octokit.Tests.Http
                     req.Method == HttpMethod.Get &&
                     req.Headers["Accept"] == "application/vnd.github.v3.html" &&
                     req.Endpoint == new Uri("endpoint", UriKind.Relative)), Args.CancellationToken);
+            }
+        }
+
+        public class TheGetRawMethod
+        {
+            [Fact]
+            public async Task SendsProperlyFormattedRequestWithProperAcceptHeader()
+            {
+                var httpClient = Substitute.For<IHttpClient>();
+                var response = CreateResponse(HttpStatusCode.OK);
+                httpClient.Send(Args.Request, Args.CancellationToken).Returns(Task.FromResult(response));
+                var connection = new Connection(new ProductHeaderValue("OctokitTests"),
+                    _exampleUri,
+                    Substitute.For<ICredentialStore>(),
+                    httpClient,
+                    Substitute.For<IJsonSerializer>());
+
+                await connection.GetRaw(new Uri("endpoint", UriKind.Relative), new Dictionary<string, string>());
+
+                httpClient.Received(1).Send(Arg.Is<IRequest>(req =>
+                    req.BaseAddress == _exampleUri &&
+                    req.ContentType == null &&
+                    req.Body == null &&
+                    req.Method == HttpMethod.Get &&
+                    req.Headers["Accept"] == "application/vnd.github.v3.raw" &&
+                    req.Endpoint == new Uri("endpoint", UriKind.Relative)), Args.CancellationToken);
+            }
+
+            [Fact]
+            public async Task SendsProperlyFormattedRequestWithProperAcceptHeaderAndTimeout()
+            {
+                var httpClient = Substitute.For<IHttpClient>();
+                var response = CreateResponse(HttpStatusCode.OK);
+                httpClient.Send(Args.Request, Args.CancellationToken).Returns(Task.FromResult(response));
+                var connection = new Connection(new ProductHeaderValue("OctokitTests"),
+                    _exampleUri,
+                    Substitute.For<ICredentialStore>(),
+                    httpClient,
+                    Substitute.For<IJsonSerializer>());
+
+                await connection.GetRaw(new Uri("endpoint", UriKind.Relative), new Dictionary<string, string>(), TimeSpan.FromSeconds(1));
+
+                httpClient.Received(1).Send(Arg.Is<IRequest>(req =>
+                    req.BaseAddress == _exampleUri &&
+                    req.Timeout == TimeSpan.FromSeconds(1) &&
+                    req.ContentType == null &&
+                    req.Body == null &&
+                    req.Method == HttpMethod.Get &&
+                    req.Headers["Accept"] == "application/vnd.github.v3.raw" &&
+                    req.Endpoint == new Uri("endpoint", UriKind.Relative)), Args.CancellationToken);
+            }
+
+            [Fact]
+            public async Task ReturnsCorrectContentForNull()
+            {
+                object body = null;
+                var httpClient = Substitute.For<IHttpClient>();
+                var response = CreateResponse(HttpStatusCode.OK, body);
+                httpClient.Send(Args.Request, Args.CancellationToken).Returns(Task.FromResult(response));
+                var connection = new Connection(new ProductHeaderValue("OctokitTests"),
+                    _exampleUri,
+                    Substitute.For<ICredentialStore>(),
+                    httpClient,
+                    Substitute.For<IJsonSerializer>());
+
+                var actual = await connection.GetRaw(new Uri("endpoint", UriKind.Relative), new Dictionary<string, string>());
+
+                Assert.NotNull(actual);
+                Assert.Null(actual.Body);
+            }
+
+            [Fact]
+            public async Task ReturnsCorrectContentForByteArray()
+            {
+                var body = new byte[] { 1, 2, 3 };
+
+                var httpClient = Substitute.For<IHttpClient>();
+                var response = CreateResponse(HttpStatusCode.OK, body);
+                httpClient.Send(Args.Request, Args.CancellationToken).Returns(Task.FromResult(response));
+                var connection = new Connection(new ProductHeaderValue("OctokitTests"),
+                    _exampleUri,
+                    Substitute.For<ICredentialStore>(),
+                    httpClient,
+                    Substitute.For<IJsonSerializer>());
+
+                var actual = await connection.GetRaw(new Uri("endpoint", UriKind.Relative), new Dictionary<string, string>());
+
+                Assert.NotNull(actual);
+                Assert.Equal(body, actual.Body);
+            }
+
+            [Fact]
+            public async Task ReturnsCorrectContentForStream()
+            {
+                var bytes = new byte[] { 1, 2, 3 };
+                var body = new MemoryStream(bytes);
+
+                var httpClient = Substitute.For<IHttpClient>();
+                var response = CreateResponse(HttpStatusCode.OK, body);
+                httpClient.Send(Args.Request, Args.CancellationToken).Returns(Task.FromResult(response));
+                var connection = new Connection(new ProductHeaderValue("OctokitTests"),
+                    _exampleUri,
+                    Substitute.For<ICredentialStore>(),
+                    httpClient,
+                    Substitute.For<IJsonSerializer>());
+
+                var actual = await connection.GetRaw(new Uri("endpoint", UriKind.Relative), new Dictionary<string, string>());
+
+                Assert.NotNull(actual);
+                Assert.Equal(bytes, actual.Body);
             }
         }
 
@@ -749,6 +882,7 @@ namespace Octokit.Tests.Http
 
                 Assert.Equal(new Uri("https://github.com/"), connection.BaseAddress);
                 Assert.StartsWith("OctokitTests (", connection.UserAgent);
+                Assert.Contains("Octokit.net", connection.UserAgent);
             }
         }
 
@@ -830,10 +964,52 @@ namespace Octokit.Tests.Http
                 // No point checking all of the values as they are tested elsewhere
                 // Just provde that the ApiInfo is populated
                 Assert.Equal(4, result.Links.Count);
-                Assert.Equal(1, result.OauthScopes.Count);
+                Assert.Single(result.OauthScopes);
                 Assert.Equal(4, result.AcceptedOauthScopes.Count);
                 Assert.Equal("5634b0b187fd2e91e3126a75006cc4fa", result.Etag);
                 Assert.Equal(100, result.RateLimit.Limit);
+            }
+        }
+
+        public class TheResponseCacheProperty
+        {
+            [Fact]
+            public void WhenSetWrapsExistingHttpClientWithCachingHttpClient()
+            {
+                var responseCache = Substitute.For<IResponseCache>();
+                var httpClient = Substitute.For<IHttpClient>();
+                var connection = new Connection(new ProductHeaderValue("OctokitTests"),
+                    _exampleUri,
+                    Substitute.For<ICredentialStore>(),
+                    httpClient,
+                    Substitute.For<IJsonSerializer>());
+
+                connection.ResponseCache = responseCache;
+
+                Assert.IsType<CachingHttpClient>(connection._httpClient);
+                var cachingHttpClient = (CachingHttpClient) connection._httpClient;
+                Assert.Equal(httpClient, cachingHttpClient._httpClient);
+                Assert.Equal(responseCache, cachingHttpClient._responseCache);
+            }
+
+            [Fact]
+            public void WhenResetWrapsUnderlyingHttpClientWithCachingHttpClient()
+            {
+                var responseCache = Substitute.For<IResponseCache>();
+                var httpClient = Substitute.For<IHttpClient>();
+                var connection = new Connection(new ProductHeaderValue("OctokitTests"),
+                    _exampleUri,
+                    Substitute.For<ICredentialStore>(),
+                    httpClient,
+                    Substitute.For<IJsonSerializer>());
+                connection.ResponseCache = Substitute.For<IResponseCache>();
+
+                connection.ResponseCache = responseCache;
+
+                Assert.IsType<CachingHttpClient>(connection._httpClient);
+                var cachingHttpClient = (CachingHttpClient) connection._httpClient;
+                Assert.Equal(httpClient, cachingHttpClient._httpClient);
+                Assert.Equal(responseCache, cachingHttpClient._responseCache);
             }
         }
     }

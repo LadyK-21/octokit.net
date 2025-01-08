@@ -26,6 +26,7 @@ namespace Octokit
             RequiredPullRequestReviews = null;
             Restrictions = null;
             EnforceAdmins = false;
+            LockBranch = false;
         }
 
         /// <summary>
@@ -38,6 +39,7 @@ namespace Octokit
             RequiredPullRequestReviews = requiredPullRequestReviews;
             Restrictions = null;
             EnforceAdmins = false;
+            LockBranch = false;
         }
 
         /// <summary>
@@ -50,18 +52,21 @@ namespace Octokit
             RequiredPullRequestReviews = null;
             Restrictions = restrictions;
             EnforceAdmins = false;
+            LockBranch = false;
         }
 
         /// <summary>
         /// Create a BranchProtection update request
         /// </summary>
         /// <param name="enforceAdmins">Specifies whether the protections applied to this branch also apply to repository admins</param>
-        public BranchProtectionSettingsUpdate(bool enforceAdmins)
+        /// <param name="lockBranch">Optionally specfies that the branch should be read-only.</param>
+        public BranchProtectionSettingsUpdate(bool enforceAdmins, bool lockBranch = false)
         {
             RequiredStatusChecks = null;
             RequiredPullRequestReviews = null;
             Restrictions = null;
             EnforceAdmins = enforceAdmins;
+            LockBranch = lockBranch;
         }
 
         /// <summary>
@@ -70,12 +75,14 @@ namespace Octokit
         /// <param name="requiredStatusChecks">Specifies the requested status check settings. Pass null to disable status checks</param>
         /// <param name="requiredPullRequestReviews">Specifies if reviews are required to merge the pull request. Pass null to disable required reviews</param>
         /// <param name="enforceAdmins">Specifies whether the protections applied to this branch also apply to repository admins</param>
-        public BranchProtectionSettingsUpdate(BranchProtectionRequiredStatusChecksUpdate requiredStatusChecks, BranchProtectionRequiredReviewsUpdate requiredPullRequestReviews, bool enforceAdmins)
+        /// <param name="lockBranch">Optionally specfies that the branch should be read-only.</param>
+        public BranchProtectionSettingsUpdate(BranchProtectionRequiredStatusChecksUpdate requiredStatusChecks, BranchProtectionRequiredReviewsUpdate requiredPullRequestReviews, bool enforceAdmins, bool lockBranch = false)
         {
             RequiredStatusChecks = requiredStatusChecks;
             RequiredPullRequestReviews = requiredPullRequestReviews;
             Restrictions = null;
             EnforceAdmins = enforceAdmins;
+            LockBranch = lockBranch;
         }
 
         /// <summary>
@@ -85,12 +92,57 @@ namespace Octokit
         /// <param name="requiredPullRequestReviews">Specifies if reviews are required to merge the pull request. Pass null to disable required reviews</param>
         /// <param name="restrictions">Specifies the requested push access restrictions (applies only to Organization owned repositories). Pass null to disable push access restrictions</param>
         /// <param name="enforceAdmins">Specifies whether the protections applied to this branch also apply to repository admins</param>
-        public BranchProtectionSettingsUpdate(BranchProtectionRequiredStatusChecksUpdate requiredStatusChecks, BranchProtectionRequiredReviewsUpdate requiredPullRequestReviews, BranchProtectionPushRestrictionsUpdate restrictions, bool enforceAdmins)
+        /// <param name="lockBranch">Optionally specfies that the branch should be read-only.</param>
+        public BranchProtectionSettingsUpdate(BranchProtectionRequiredStatusChecksUpdate requiredStatusChecks,
+                                              BranchProtectionRequiredReviewsUpdate requiredPullRequestReviews,
+                                              BranchProtectionPushRestrictionsUpdate restrictions,
+                                              bool enforceAdmins,
+                                              bool lockBranch = false)
         {
             RequiredStatusChecks = requiredStatusChecks;
             RequiredPullRequestReviews = requiredPullRequestReviews;
             Restrictions = restrictions;
             EnforceAdmins = enforceAdmins;
+            LockBranch = lockBranch;
+        }
+
+        /// <summary>
+        /// Create a BranchProtection update request
+        /// </summary>
+        /// <param name="requiredStatusChecks">Specifies the requested status check settings. Pass null to disable status checks</param>
+        /// <param name="requiredPullRequestReviews">Specifies if reviews are required to merge the pull request. Pass null to disable required reviews</param>
+        /// <param name="restrictions">Specifies the requested push access restrictions (applies only to Organization owned repositories). Pass null to disable push access restrictions</param>
+        /// <param name="requiredSignatures">Specifies whether commits to a branch are required to be signed by gpg keys</param>
+        /// <param name="enforceAdmins">Specifies whether the protections applied to this branch also apply to repository admins</param>
+        /// <param name="requiredLinearHistory">Enforces a linear commit Git history</param>
+        /// <param name="allowForcePushes">Permits force pushes to the protected branch</param>
+        /// <param name="allowDeletions">Allows deletion of the protected branch</param>
+        /// <param name="blockCreations">The restrictions branch protection settings will also block pushes which create new branches</param>
+        /// <param name="requiredConversationResolution">Requires all conversations on code to be resolved before a pull request can be merged</param>
+        /// <param name="lockBranch">Optionally specfies that the branch should be read-only.</param>
+        public BranchProtectionSettingsUpdate(BranchProtectionRequiredStatusChecksUpdate requiredStatusChecks,
+                                              BranchProtectionRequiredReviewsUpdate requiredPullRequestReviews,
+                                              BranchProtectionPushRestrictionsUpdate restrictions,
+                                              bool requiredSignatures,
+                                              bool enforceAdmins,
+                                              bool requiredLinearHistory,
+                                              bool? allowForcePushes,
+                                              bool allowDeletions,
+                                              bool blockCreations,
+                                              bool requiredConversationResolution,
+                                              bool lockBranch = false)
+        {
+            RequiredStatusChecks = requiredStatusChecks;
+            RequiredPullRequestReviews = requiredPullRequestReviews;
+            Restrictions = restrictions;
+            RequiredSignatures = requiredSignatures;
+            EnforceAdmins = enforceAdmins;
+            LockBranch = lockBranch;
+            RequiredLinearHistory = requiredLinearHistory;
+            AllowForcePushes = allowForcePushes;
+            AllowDeletions = allowDeletions;
+            BlockCreations = blockCreations;
+            RequiredConversationResolution = requiredConversationResolution;
         }
 
         /// <summary>
@@ -110,22 +162,59 @@ namespace Octokit
         /// </summary>
         [SerializeNull]
         public BranchProtectionPushRestrictionsUpdate Restrictions { get; protected set; }
+        
+        /// <summary>
+        /// Specifies whether the signed commits are required for this branch
+        /// </summary>
+        public bool RequiredSignatures { get; set; }
 
         /// <summary>
         /// Specifies whether the protections applied to this branch also apply to repository admins
         /// </summary>
         public bool EnforceAdmins { get; set; }
 
+        /// <summary>
+        /// Specifies whether this branch should be read-only.
+        /// </summary>
+        public bool LockBranch { get; set; }
+
+        /// <summary>
+        /// Enforces a linear commit Git history. Default is false.
+        /// </summary>
+        public bool RequiredLinearHistory { get; set; }
+
+        /// <summary>
+        /// Permits force pushes to the protected branch by anyone with write access to the repository. Default is false.
+        /// </summary>
+        public bool? AllowForcePushes { get; set; }
+
+        /// <summary>
+        /// Allows deletion of the protected branch by anyone with write access to the repository. Default is false.
+        /// </summary>
+        public bool AllowDeletions { get; set; }
+
+        /// <summary>
+        /// If set to true, the restrictions branch protection settings which limits who can push will also block pushes which create new branches, unless the push is initiated by a user, team, or app which has the ability to push. Default is false.
+        /// </summary>
+        public bool BlockCreations { get; set; }
+
+        /// <summary>
+        /// Requires all conversations on code to be resolved before a pull request can be merged. Default is false.
+        /// </summary>
+        public bool RequiredConversationResolution { get; set; }
+
+
         internal string DebuggerDisplay
         {
             get
             {
                 return string.Format(CultureInfo.InvariantCulture,
-                    "RequiredStatusChecks: {0} RequiredPullRequestReviews: {1} Restrictions: {2} EnforceAdmins: {3}",
+                    "RequiredStatusChecks: {0} RequiredPullRequestReviews: {1} Restrictions: {2} EnforceAdmins: {3} LockBranch: {4}",
                     RequiredStatusChecks?.DebuggerDisplay ?? "disabled",
                     RequiredPullRequestReviews?.DebuggerDisplay ?? "disabled",
                     Restrictions?.DebuggerDisplay ?? "disabled",
-                    EnforceAdmins);
+                    EnforceAdmins,
+                    LockBranch);
             }
         }
     }
@@ -289,11 +378,13 @@ namespace Octokit
         /// <param name="dismissStaleReviews">Dismiss approved reviews automatically when a new commit is pushed.</param>
         /// <param name="requireCodeOwnerReviews">Blocks merge until code owners have reviewed.</param>
         /// <param name="requiredApprovingReviewCount">Specify the number of reviewers required to approve pull requests. Use a number between 1 and 6.</param>
-        public BranchProtectionRequiredReviewsUpdate(bool dismissStaleReviews, bool requireCodeOwnerReviews, int requiredApprovingReviewCount)
+        /// <param name="requireLastPushApproval">Whether the most recent push must be approved by someone other than the person who pushed it. Default: false.</param>
+        public BranchProtectionRequiredReviewsUpdate(bool dismissStaleReviews, bool requireCodeOwnerReviews, int requiredApprovingReviewCount, bool requireLastPushApproval = false)
         {
             DismissStaleReviews = dismissStaleReviews;
             RequireCodeOwnerReviews = requireCodeOwnerReviews;
             RequiredApprovingReviewCount = requiredApprovingReviewCount;
+            RequireLastPushApproval = requireLastPushApproval;
         }
 
         /// <summary>
@@ -303,7 +394,8 @@ namespace Octokit
         /// <param name="dismissStaleReviews">Dismiss approved reviews automatically when a new commit is pushed.</param>
         /// <param name="requireCodeOwnerReviews">Blocks merge until code owners have reviewed.</param>
         /// <param name="requiredApprovingReviewCount">Specify the number of reviewers required to approve pull requests. Use a number between 1 and 6.</param>
-        public BranchProtectionRequiredReviewsUpdate(BranchProtectionRequiredReviewsDismissalRestrictionsUpdate dismissalRestrictions, bool dismissStaleReviews, bool requireCodeOwnerReviews, int requiredApprovingReviewCount)
+        /// <param name="requireLastPushApproval">Whether the most recent push must be approved by someone other than the person who pushed it. Default: false.</param>
+        public BranchProtectionRequiredReviewsUpdate(BranchProtectionRequiredReviewsDismissalRestrictionsUpdate dismissalRestrictions, bool dismissStaleReviews, bool requireCodeOwnerReviews, int requiredApprovingReviewCount, bool requireLastPushApproval = false)
         {
             Ensure.ArgumentNotNull(dismissalRestrictions, nameof(dismissalRestrictions));
 
@@ -311,6 +403,7 @@ namespace Octokit
             DismissStaleReviews = dismissStaleReviews;
             RequireCodeOwnerReviews = requireCodeOwnerReviews;
             RequiredApprovingReviewCount = requiredApprovingReviewCount;
+            RequireLastPushApproval = requireLastPushApproval;
         }
 
         /// <summary>
@@ -332,16 +425,22 @@ namespace Octokit
         /// Specify the number of reviewers required to approve pull requests. Use a number between 1 and 6.
         /// </summary>
         public int RequiredApprovingReviewCount { get; protected set; }
+        
+        /// <summary>
+        /// Whether the most recent push must be approved by someone other than the person who pushed it. Default: false
+        /// </summary>
+        public bool RequireLastPushApproval { get; protected set; }
 
         internal string DebuggerDisplay
         {
             get
             {
-                return string.Format(CultureInfo.InvariantCulture, "DismissalRestrictions: {0} DismissStaleReviews: {1} RequireCodeOwnerReviews: {2} RequiredApprovingReviewCount: {3}",
+                return string.Format(CultureInfo.InvariantCulture, "DismissalRestrictions: {0} DismissStaleReviews: {1} RequireCodeOwnerReviews: {2} RequiredApprovingReviewCount: {3} RequireLastPushApproval: {4}",
                     DismissalRestrictions?.DebuggerDisplay ?? "disabled",
                     DismissStaleReviews,
                     RequireCodeOwnerReviews,
-                    RequiredApprovingReviewCount);
+                    RequiredApprovingReviewCount,
+                    RequireLastPushApproval);
             }
         }
     }

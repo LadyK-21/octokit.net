@@ -12,7 +12,7 @@ namespace Octokit.Reactive
     /// </remarks>
     public class ObservableGitHubAppsClient : IObservableGitHubAppsClient
     {
-        private IGitHubAppsClient _client;
+        private readonly IGitHubAppsClient _client;
         private readonly IConnection _connection;
 
         public ObservableGitHubAppsClient(IGitHubClient client)
@@ -72,7 +72,7 @@ namespace Octokit.Reactive
         {
             Ensure.ArgumentNotNull(options, nameof(options));
 
-            return _connection.GetAndFlattenAllPages<Installation>(ApiUrls.Installations(), null, AcceptHeaders.GitHubAppsPreview, options);
+            return _connection.GetAndFlattenAllPages<Installation>(ApiUrls.Installations(), null, options);
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Octokit.Reactive
         /// <remarks>https://developer.github.com/v3/apps/#list-installations-for-user</remarks>
         public IObservable<InstallationsResponse> GetAllInstallationsForCurrentUser()
         {
-            return _connection.GetAndFlattenAllPages<InstallationsResponse>(ApiUrls.UserInstallations(), null, AcceptHeaders.GitHubAppsPreview);
+            return _connection.GetAndFlattenAllPages<InstallationsResponse>(ApiUrls.UserInstallations());
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Octokit.Reactive
         /// <remarks>https://developer.github.com/v3/apps/#list-installations-for-user</remarks>
         public IObservable<InstallationsResponse> GetAllInstallationsForCurrentUser(ApiOptions options)
         {
-            return _connection.GetAndFlattenAllPages<InstallationsResponse>(ApiUrls.UserInstallations(), null, AcceptHeaders.GitHubAppsPreview, options);
+            return _connection.GetAndFlattenAllPages<InstallationsResponse>(ApiUrls.UserInstallations(), options);
         }
 
         /// <summary>
@@ -174,6 +174,19 @@ namespace Octokit.Reactive
             Ensure.ArgumentNotNullOrEmptyString(user, nameof(user));
 
             return _client.GetUserInstallationForCurrent(user).ToObservable();
+        }
+
+        /// <summary>
+        /// Creates a GitHub app by completing the handshake necessary when implementing the GitHub App Manifest flow.
+        /// https://docs.github.com/apps/sharing-github-apps/registering-a-github-app-from-a-manifest
+        /// </summary>
+        /// <remarks>https://docs.github.com/rest/apps/apps#create-a-github-app-from-a-manifest</remarks>
+        /// <param name="code">Temporary code in a code parameter.</param>
+        public IObservable<GitHubAppFromManifest> CreateAppFromManifest(string code)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(code, nameof(code));
+
+            return _client.CreateAppFromManifest(code).ToObservable();
         }
     }
 }

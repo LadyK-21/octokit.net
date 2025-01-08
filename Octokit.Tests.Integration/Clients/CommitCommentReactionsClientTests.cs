@@ -18,7 +18,7 @@ public class CommitCommentReactionsClientTests
         {
             _github = Helper.GetAuthenticatedClient();
 
-            _context = _github.CreateRepositoryContext("public-repo").Result;
+            _context = _github.CreateRepositoryContextWithAutoInit("public-repo").Result;
         }
 
         private async Task<Commit> SetupCommitForRepository(IGitHubClient client)
@@ -97,7 +97,7 @@ public class CommitCommentReactionsClientTests
             };
             var reactions = await _github.Reaction.CommitComment.GetAll(_context.RepositoryOwner, _context.RepositoryName, result.Id, options);
 
-            Assert.Equal(1, reactions.Count);
+            Assert.Single(reactions);
 
             Assert.Equal(reaction.Id, reactions[0].Id);
             Assert.Equal(reaction.Content, reactions[0].Content);
@@ -132,7 +132,7 @@ public class CommitCommentReactionsClientTests
             };
             var reactionsInfo = await _github.Reaction.CommitComment.GetAll(_context.RepositoryOwner, _context.RepositoryName, result.Id, options);
 
-            Assert.Equal(1, reactionsInfo.Count);
+            Assert.Single(reactionsInfo);
 
             Assert.Equal(reactions.Last().Id, reactionsInfo[0].Id);
             Assert.Equal(reactions.Last().Content, reactionsInfo[0].Content);
@@ -173,8 +173,8 @@ public class CommitCommentReactionsClientTests
             };
             var secondPage = await _github.Reaction.CommitComment.GetAll(_context.RepositoryOwner, _context.RepositoryName, result.Id, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage[0].Id, secondPage[0].Id);
             Assert.NotEqual(firstPage[0].Content, secondPage[0].Content);
         }
@@ -225,7 +225,7 @@ public class CommitCommentReactionsClientTests
             };
             var reactions = await _github.Reaction.CommitComment.GetAll(_context.Repository.Id, result.Id, options);
 
-            Assert.Equal(1, reactions.Count);
+            Assert.Single(reactions);
 
             Assert.Equal(reaction.Id, reactions[0].Id);
             Assert.Equal(reaction.Content, reactions[0].Content);
@@ -260,7 +260,7 @@ public class CommitCommentReactionsClientTests
             };
             var reactionsInfo = await _github.Reaction.CommitComment.GetAll(_context.Repository.Id, result.Id, options);
 
-            Assert.Equal(1, reactionsInfo.Count);
+            Assert.Single(reactionsInfo);
 
             Assert.Equal(reactions.Last().Id, reactionsInfo[0].Id);
             Assert.Equal(reactions.Last().Content, reactionsInfo[0].Content);
@@ -301,8 +301,8 @@ public class CommitCommentReactionsClientTests
             };
             var secondPage = await _github.Reaction.CommitComment.GetAll(_context.Repository.Id, result.Id, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage[0].Id, secondPage[0].Id);
             Assert.NotEqual(firstPage[0].Content, secondPage[0].Content);
         }
@@ -350,6 +350,54 @@ public class CommitCommentReactionsClientTests
             Assert.Equal(ReactionType.Confused, reaction.Content);
 
             Assert.Equal(result.User.Id, reaction.User.Id);
+        }
+
+
+        [IntegrationTest]
+        public async Task CanDeleteReaction()
+        {
+            var commit = await SetupCommitForRepository(_github);
+
+            var comment = new NewCommitComment("test");
+
+            var result = await _github.Repository.Comment.Create(_context.RepositoryOwner, _context.RepositoryName,
+                commit.Sha, comment);
+
+            foreach (ReactionType reactionType in Enum.GetValues(typeof(ReactionType)))
+            {
+                var newReaction = new NewReaction(reactionType);
+
+                var reaction = await _github.Reaction.CommitComment.Create(_context.RepositoryOwner, _context.RepositoryName, result.Id, newReaction);
+
+                await _github.Reaction.CommitComment.Delete(_context.RepositoryOwner, _context.RepositoryName, result.Id, reaction.Id);
+            }
+
+            var finalComments = await _github.Reaction.CommitComment.GetAll(_context.RepositoryOwner, _context.RepositoryName, result.Id);
+
+            Assert.Empty(finalComments);
+        }
+
+        [IntegrationTest]
+        public async Task CanDeleteReactionWithRepositoryId()
+        {
+            var commit = await SetupCommitForRepository(_github);
+
+            var comment = new NewCommitComment("test");
+
+            var result = await _github.Repository.Comment.Create(_context.RepositoryId, commit.Sha, comment);
+
+            foreach (ReactionType reactionType in Enum.GetValues(typeof(ReactionType)))
+            {
+                var newReaction = new NewReaction(reactionType);
+
+                var reaction = await _github.Reaction.CommitComment.Create(_context.RepositoryId, result.Id, newReaction);
+
+                await _github.Reaction.CommitComment.Delete(_context.RepositoryId, result.Id, reaction.Id);
+            }
+
+            var finalComments = await _github.Reaction.CommitComment.GetAll(_context.RepositoryId, result.Id);
+
+            Assert.Empty(finalComments);
         }
 
         public void Dispose()

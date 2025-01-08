@@ -58,7 +58,7 @@ public class SearchIssuesRequestTests
                 property.Value(request, "blah");
 
                 // Ensure the specified parameter now exists
-                Assert.True(request.MergedQualifiers().Count(x => x.Contains(property.Key)) == 1);
+                Assert.Equal(1, request.MergedQualifiers().Count(x => x.Contains(property.Key)));
             }
         }
 
@@ -84,7 +84,7 @@ public class SearchIssuesRequestTests
                 property.Value(request, DateRange.GreaterThan(new DateTimeOffset(DateTime.Today.AddDays(-7))));
 
                 // Ensure the specified parameter now exists
-                Assert.True(request.MergedQualifiers().Count(x => x.Contains(property.Key)) == 1);
+                Assert.Equal(1, request.MergedQualifiers().Count(x => x.Contains(property.Key)));
             }
         }
 
@@ -114,9 +114,13 @@ public class SearchIssuesRequestTests
             var request = new SearchIssuesRequest("test");
             Assert.DoesNotContain(request.MergedQualifiers(), x => x.Contains("label:"));
 
-            request.Labels = new[] { "label1", "label 2" };
-            Assert.Contains("label:\"label1\"", request.MergedQualifiers());
-            Assert.Contains("label:\"label 2\"", request.MergedQualifiers());
+            request.Labels = new[] { "label1", "label 2", "label3,label 4" };
+
+            var qualifiers = request.MergedQualifiers();
+
+            Assert.Contains("label:label1", qualifiers);
+            Assert.Contains("label:\"label 2\"", qualifiers);
+            Assert.Contains("label:label3,\"label 4\"", qualifiers);
         }
 
         [Fact]
@@ -168,6 +172,17 @@ public class SearchIssuesRequestTests
             request.Is = new List<IssueIsQualifier> { IssueIsQualifier.Merged, IssueIsQualifier.PullRequest };
             Assert.Contains("is:merged", request.MergedQualifiers());
             Assert.Contains("is:pr", request.MergedQualifiers());
+        }
+
+        [Fact]
+        public void HandlesIsLockedUnlockedAttributeCorrectly()
+        {
+            var request = new SearchIssuesRequest("test");
+            Assert.DoesNotContain(request.MergedQualifiers(), x => x.Contains("is:"));
+
+            request.Is = new List<IssueIsQualifier> { IssueIsQualifier.Locked, IssueIsQualifier.Unlocked };
+            Assert.Contains("is:locked", request.MergedQualifiers());
+            Assert.Contains("is:unlocked", request.MergedQualifiers());
         }
 
         [Fact]

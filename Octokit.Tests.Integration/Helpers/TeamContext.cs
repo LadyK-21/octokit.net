@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Octokit.Tests.Integration.Helpers
 {
@@ -17,8 +15,8 @@ namespace Octokit.Tests.Integration.Helpers
             Invitations = new List<string>();
         }
 
-        private IConnection _connection;
-        internal int TeamId { get; private set; }
+        private readonly IConnection _connection;
+        internal long TeamId { get; private set; }
         internal string TeamName { get; private set; }
 
         internal Team Team { get; private set; }
@@ -32,7 +30,7 @@ namespace Octokit.Tests.Integration.Helpers
         public void Dispose()
         {
             if (Invitations.Any())
-                Helper.DeleteInvitations(_connection, Invitations, TeamId);
+                Helper.DeleteInvitations(_connection, Invitations);
 
             Helper.DeleteTeam(_connection, Team);
         }

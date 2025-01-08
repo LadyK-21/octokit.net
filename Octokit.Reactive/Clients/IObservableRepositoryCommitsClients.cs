@@ -12,6 +12,38 @@ namespace Octokit.Reactive
     public interface IObservableRepositoryCommitsClient
     {
         /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="sha1">Used to find all branches where the given commit SHA is the HEAD, or latest commit for the branch</param>
+        IObservable<Branch> BranchesWhereHead(long repositoryId, string sha1);
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="sha1">Used to find all branches where the given commit SHA is the HEAD, or latest commit for the branch</param>
+        /// /// <param name="options">Options for changing the API response</param>
+        IObservable<Branch> BranchesWhereHead(long repositoryId, string sha1, ApiOptions options);
+
+        /// <summary>
+        /// List pull requests associated with a commit
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="sha1">Used to find all branches where the given commit SHA is the HEAD, or latest commit for the branch</param>
+        IObservable<Branch> BranchesWhereHead(string owner, string name, string sha1);
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="sha1">Used to find all branches where the given commit SHA is the HEAD, or latest commit for the branch</param>
+        /// /// <param name="options">Options for changing the API response</param>
+        IObservable<Branch> BranchesWhereHead(string owner, string name, string sha1, ApiOptions options);
+
+        /// <summary>
         /// Compare two references in a repository
         /// </summary>
         /// <param name="owner">The owner of the repository</param>
@@ -29,6 +61,27 @@ namespace Octokit.Reactive
         /// <param name="head">The reference to use as the head commit</param>
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "base")]
         IObservable<CompareResult> Compare(long repositoryId, string @base, string head);
+
+        /// <summary>
+        /// Compare two references in a repository
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="base">The reference to use as the base commit</param>
+        /// <param name="head">The reference to use as the head commit</param>
+        /// <param name="options">Options for changing the API response</param>
+        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "base")]
+        IObservable<CompareResult> Compare(string owner, string name, string @base, string head, ApiOptions options);
+
+        /// <summary>
+        /// Compare two references in a repository
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="base">The reference to use as the base commit</param>
+        /// <param name="head">The reference to use as the head commit</param>
+        /// <param name="options">Options for changing the API response</param>
+        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "base")]
+        IObservable<CompareResult> Compare(long repositoryId, string @base, string head, ApiOptions options);
 
         /// <summary>
         /// Gets all commits for a given repository
@@ -123,5 +176,37 @@ namespace Octokit.Reactive
         /// <param name="repositoryId">The Id of the repository</param>
         /// <param name="reference">The repository reference</param>
         IObservable<string> GetSha1(long repositoryId, string reference);
+
+        /// <summary>
+        /// List pull requests associated with a commit
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="sha1">Used to find all pull requests containing the provided commit SHA, which can be from any point in the commit history</param>
+        IObservable<CommitPullRequest> PullRequests(string owner, string name, string sha1);
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="sha1">Used to find all pull requests containing the provided commit SHA, which can be from any point in the commit history</param>
+        IObservable<CommitPullRequest> PullRequests(long repositoryId, string sha1);
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="sha1">Used to find all pull requests containing the provided commit SHA, which can be from any point in the commit history</param>
+        /// /// <param name="options">Options for changing the API response</param>
+        IObservable<CommitPullRequest> PullRequests(long repositoryId, string sha1, ApiOptions options);
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="sha1">Used to find all pull requests containing the provided commit SHA, which can be from any point in the commit history</param>
+        /// /// <param name="options">Options for changing the API response</param>
+        IObservable<CommitPullRequest> PullRequests(string owner, string name, string sha1, ApiOptions options);
     }
 }

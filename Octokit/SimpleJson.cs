@@ -59,9 +59,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-#if !NO_SERIALIZABLE
 using System.Runtime.Serialization;
-#endif
 using System.Text;
 using Octokit.Reflection;
 #if !SIMPLE_JSON_NO_LINQ_EXPRESSION
@@ -549,11 +547,7 @@ namespace Octokit
             if (TryDeserializeObject(json, out obj))
                 return obj;
 
-#if !NO_SERIALIZABLE
             throw new SerializationException("Invalid JSON string");
-#else
-            throw new Exception("Invalid JSON string");
-#endif
         }
 
         /// <summary>
@@ -798,15 +792,18 @@ namespace Octokit
             return null;
         }
 
-        static string ParseString(char[] json, ref int index, ref bool success)
+        internal static string ParseString(char[] json, ref int index, ref bool success)
         {
-            StringBuilder s = new StringBuilder(BUILDER_CAPACITY);
+            // Avoid allocating this StringBuilder unless a backslash is encountered in the json
+            StringBuilder s = null;
             char c;
 
             EatWhitespace(json, ref index);
 
             // "
             c = json[index++];
+
+            int startIndex = index;
             bool complete = false;
             while (!complete)
             {
@@ -821,6 +818,13 @@ namespace Octokit
                 }
                 else if (c == '\\')
                 {
+                    if (s == null)
+                    {
+                        s = new StringBuilder(BUILDER_CAPACITY);
+                        for (int i = startIndex; i < index - 1; i++)
+                            s.Append(json[i]);
+                    }
+
                     if (index == json.Length)
                         break;
                     c = json[index++];
@@ -881,14 +885,21 @@ namespace Octokit
                     }
                 }
                 else
-                    s.Append(c);
+                {
+                    if (s != null)
+                        s.Append(c);
+                }
             }
             if (!complete)
             {
                 success = false;
                 return null;
             }
-            return s.ToString();
+
+            if (s != null)
+                return s.ToString();
+
+            return new string(json, startIndex, index - startIndex - 1);
         }
 
         private static string ConvertFromUtf32(int utf32)
@@ -1428,7 +1439,9 @@ namespace Octokit
             bool valueIsDouble = value is double;
             if ((valueIsLong && type == typeof(long)) || (valueIsDouble && type == typeof(double)))
                 return value;
-            if ((valueIsDouble && type != typeof(double)) || (valueIsLong && type != typeof(long)))
+            if (valueIsLong && type == typeof(IReadOnlyList<long>))
+                obj = new long[] { (long)value };
+            else if ((valueIsDouble && type != typeof(double)) || (valueIsLong && type != typeof(long)))
             {
                 if (valueIsLong && (type == typeof(DateTimeOffset) || type == typeof(DateTimeOffset?)))
                 {
@@ -1442,6 +1455,8 @@ namespace Octokit
                             ? Convert.ChangeType(value, type, CultureInfo.InvariantCulture)
                             : value;
             }
+            else if (type == typeof(object) || (ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(object)))
+                obj = value;
             else
             {
                 IDictionary<string, object> objects = value as IDictionary<string, object>;

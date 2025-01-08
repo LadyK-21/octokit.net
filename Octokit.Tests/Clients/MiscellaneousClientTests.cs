@@ -65,15 +65,15 @@ namespace Octokit.Tests.Clients
             [Fact]
             public async Task RequestsTheEmojiEndpoint()
             {
-                IReadOnlyList<Emoji> response = new List<Emoji>
+                IDictionary<string, string> response = new Dictionary<string, string>
                 {
-                    { new Emoji("foo", "http://example.com/foo.gif") },
-                    { new Emoji("bar", "http://example.com/bar.gif") }
+                    { "foo", "http://example.com/foo.gif" },
+                    { "bar", "http://example.com/bar.gif" }
                 };
 
                 var apiConnection = Substitute.For<IApiConnection>();
-                apiConnection.GetAll<Emoji>(Args.Uri)
-                          .Returns(Task.FromResult(response));
+                apiConnection.Get<IDictionary<string, string>>(Args.Uri)
+                    .Returns(Task.FromResult(response));
 
                 var client = new MiscellaneousClient(apiConnection);
 
@@ -82,7 +82,7 @@ namespace Octokit.Tests.Clients
                 Assert.Equal(2, emojis.Count);
                 Assert.Equal("foo", emojis[0].Name);
                 apiConnection.Received()
-                    .GetAll<Emoji>(Arg.Is<Uri>(u => u.ToString() == "emojis"));
+                    .Get<IDictionary<string, string>>(Arg.Is<Uri>(u => u.ToString() == "emojis"));
             }
         }
 
@@ -94,7 +94,8 @@ namespace Octokit.Tests.Clients
                 var rateLimit = new MiscellaneousRateLimit(
                      new ResourceRateLimit(
                          new RateLimit(5000, 4999, 1372700873),
-                         new RateLimit(30, 18, 1372700873)
+                         new RateLimit(30, 18, 1372700873),
+                          new RateLimit(5000, 4999, 1372700873)
                      ),
                      new RateLimit(100, 75, 1372700873)
                  );
@@ -102,7 +103,6 @@ namespace Octokit.Tests.Clients
                 apiConnection.Get<MiscellaneousRateLimit>(Arg.Is<Uri>(u => u.ToString() == "rate_limit")).Returns(Task.FromResult(rateLimit));
 
                 var client = new MiscellaneousClient(apiConnection);
-
                 var result = await client.GetRateLimits();
 
                 // Test the core limits
@@ -124,6 +124,16 @@ namespace Octokit.Tests.Clients
                     "ddd dd MMM yyyy h:mm:ss tt zzz",
                     CultureInfo.InvariantCulture);
                 Assert.Equal(expectedReset, result.Resources.Search.Reset);
+
+                // Test the graphql limits
+                Assert.Equal(5000, result.Resources.Graphql.Limit);
+                Assert.Equal(4999, result.Resources.Graphql.Remaining);
+                Assert.Equal(1372700873, result.Resources.Graphql.ResetAsUtcEpochSeconds);
+                expectedReset = DateTimeOffset.ParseExact(
+                    "Mon 01 Jul 2013 5:47:53 PM -00:00",
+                    "ddd dd MMM yyyy h:mm:ss tt zzz",
+                    CultureInfo.InvariantCulture);
+                Assert.Equal(expectedReset, result.Resources.Graphql.Reset);
 
                 // Test the depreciated rate limits
                 Assert.Equal(100, result.Rate.Limit);
@@ -151,7 +161,13 @@ namespace Octokit.Tests.Clients
                      new[] { "1.1.1.1/24", "1.1.1.2/24" },
                      new[] { "1.1.2.1/24", "1.1.2.2/24" },
                      new[] { "1.1.3.1/24", "1.1.3.2/24" },
-                     new[] { "1.1.4.1", "1.1.4.2" }
+                     new[] { "1.1.4.1/24", "1.1.4.2/24" },
+                     new[] { "1.1.5.1/24", "1.1.5.2/24" },
+                     new[] { "1.1.6.1/24", "1.1.6.2/24" },
+                     new[] { "1.1.7.1", "1.1.7.2" },
+                     new[] { "1.1.8.1/24", "1.1.8.2/24" },
+                     new[] { "1.1.9.1", "1.1.9.2" },
+                     "3.7.0"
                  );
 
                 var apiConnection = Substitute.For<IApiConnection>();
@@ -161,11 +177,18 @@ namespace Octokit.Tests.Clients
                 var result = await client.GetMetadata();
 
                 Assert.False(result.VerifiablePasswordAuthentication);
+#pragma warning disable CS0618 // Type or member is obsolete
                 Assert.Equal("12345ABCDE", result.GitHubServicesSha);
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(result.Hooks, new[] { "1.1.1.1/24", "1.1.1.2/24" });
-                Assert.Equal(result.Git, new[] { "1.1.2.1/24", "1.1.2.2/24" });
-                Assert.Equal(result.Pages, new[] { "1.1.3.1/24", "1.1.3.2/24" });
-                Assert.Equal(result.Importer, new[] { "1.1.4.1", "1.1.4.2" });
+                Assert.Equal(result.Web, new[] { "1.1.2.1/24", "1.1.2.2/24" });
+                Assert.Equal(result.Api, new[] { "1.1.3.1/24", "1.1.3.2/24" });
+                Assert.Equal(result.Git, new[] { "1.1.4.1/24", "1.1.4.2/24" });
+                Assert.Equal(result.Packages, new[] { "1.1.5.1/24", "1.1.5.2/24" });
+                Assert.Equal(result.Pages, new[] { "1.1.6.1/24", "1.1.6.2/24" });
+                Assert.Equal(result.Importer, new[] { "1.1.7.1", "1.1.7.2" });
+                Assert.Equal(result.Actions, new[] { "1.1.8.1/24", "1.1.8.2/24" });
+                Assert.Equal(result.Dependabot, new[] { "1.1.9.1", "1.1.9.2" });
 
                 apiConnection.Received()
                     .Get<Meta>(Arg.Is<Uri>(u => u.ToString() == "meta"));
@@ -184,11 +207,11 @@ namespace Octokit.Tests.Clients
         public class TheGetAllLicensesMethod
         {
             [Fact]
-            public void EnsuresNonNullArguments()
+            public async Task EnsuresNonNullArguments()
             {
                 var client = new MiscellaneousClient(Substitute.For<IApiConnection>());
 
-                Assert.ThrowsAsync<ArgumentNullException>(() => client.GetAllLicenses(null));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.GetAllLicenses(null));
             }
 
             [Fact]

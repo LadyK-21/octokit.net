@@ -44,7 +44,7 @@ namespace Octokit
         public Task<IReadOnlyList<PreReceiveEnvironment>> GetAll(ApiOptions options)
         {
             var endpoint = ApiUrls.AdminPreReceiveEnvironments();
-            return ApiConnection.GetAll<PreReceiveEnvironment>(endpoint, null, AcceptHeaders.PreReceiveEnvironmentsPreview, options);
+            return ApiConnection.GetAll<PreReceiveEnvironment>(endpoint, null, options);
         }
 
         /// <summary>
@@ -53,14 +53,14 @@ namespace Octokit
         /// <remarks>
         /// See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#get-a-single-pre-receive-environment">API documentation</a> for more information.
         /// </remarks>
-        /// <param name="environmentId">The id of the pre-receive environment</param>
-        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+        /// <param name="preReceiveEnvironmentId">The id of the pre-receive environment</param>
+        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="preReceiveEnvironmentId"/> does not exist.</exception>
         /// <exception cref="ApiException">Thrown when a general API error occurs.</exception>
         [ManualRoute("GET", "/admin/pre-receive-environments/{pre_receive_environment_id}")]
-        public Task<PreReceiveEnvironment> Get(long environmentId)
+        public Task<PreReceiveEnvironment> Get(long preReceiveEnvironmentId)
         {
-            var endpoint = ApiUrls.AdminPreReceiveEnvironments(environmentId);
-            return ApiConnection.Get<PreReceiveEnvironment>(endpoint, null, AcceptHeaders.PreReceiveEnvironmentsPreview);
+            var endpoint = ApiUrls.AdminPreReceiveEnvironments(preReceiveEnvironmentId);
+            return ApiConnection.Get<PreReceiveEnvironment>(endpoint, null);
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Octokit
             Ensure.ArgumentNotNull(newPreReceiveEnvironment, nameof(newPreReceiveEnvironment));
 
             var endpoint = ApiUrls.AdminPreReceiveEnvironments();
-            return ApiConnection.Post<PreReceiveEnvironment>(endpoint, newPreReceiveEnvironment, AcceptHeaders.PreReceiveEnvironmentsPreview);
+            return ApiConnection.Post<PreReceiveEnvironment>(endpoint, newPreReceiveEnvironment);
         }
 
         /// <summary>
@@ -86,17 +86,17 @@ namespace Octokit
         /// <remarks>
         /// See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#edit-a-pre-receive-environment">API documentation</a> for more information.
         /// </remarks>
-        /// <param name="environmentId">The id of the pre-receive environment</param>
+        /// <param name="preReceiveEnvironmentId">The id of the pre-receive environment</param>
         /// <param name="updatePreReceiveEnvironment">A description of the pre-receive environment to edit</param>
-        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="preReceiveEnvironmentId"/> does not exist.</exception>
         /// <exception cref="ApiException">Thrown when a general API error occurs.</exception>
         [ManualRoute("PATCH", "/admin/pre-receive-environments/{pre_receive_environment_id}")]
-        public Task<PreReceiveEnvironment> Edit(long environmentId, UpdatePreReceiveEnvironment updatePreReceiveEnvironment)
+        public Task<PreReceiveEnvironment> Edit(long preReceiveEnvironmentId, UpdatePreReceiveEnvironment updatePreReceiveEnvironment)
         {
             Ensure.ArgumentNotNull(updatePreReceiveEnvironment, nameof(updatePreReceiveEnvironment));
 
-            var endpoint = ApiUrls.AdminPreReceiveEnvironments(environmentId);
-            return ApiConnection.Patch<PreReceiveEnvironment>(endpoint, updatePreReceiveEnvironment, AcceptHeaders.PreReceiveEnvironmentsPreview);
+            var endpoint = ApiUrls.AdminPreReceiveEnvironments(preReceiveEnvironmentId);
+            return ApiConnection.Patch<PreReceiveEnvironment>(endpoint, updatePreReceiveEnvironment);
         }
 
         /// <summary>
@@ -105,14 +105,14 @@ namespace Octokit
         /// <remarks>
         /// See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#delete-a-pre-receive-environment">API documentation</a> for more information.
         /// </remarks>
-        /// <param name="environmentId">The id of the pre-receive environment</param>
-        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+        /// <param name="preReceiveEnvironmentId">The id of the pre-receive environment</param>
+        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="preReceiveEnvironmentId"/> does not exist.</exception>
         /// <exception cref="ApiException">Thrown when a general API error occurs.</exception>
         [ManualRoute("DELETE", "/admin/pre-receive-environments/{pre_receive_environment_id}")]
-        public Task Delete(long environmentId)
+        public Task Delete(long preReceiveEnvironmentId)
         {
-            var endpoint = ApiUrls.AdminPreReceiveEnvironments(environmentId);
-            return ApiConnection.Delete(endpoint, new object(), AcceptHeaders.PreReceiveEnvironmentsPreview);
+            var endpoint = ApiUrls.AdminPreReceiveEnvironments(preReceiveEnvironmentId);
+            return ApiConnection.Delete(endpoint, new object());
         }
 
         /// <summary>
@@ -121,14 +121,14 @@ namespace Octokit
         /// <remarks>
         /// See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#get-a-pre-receive-environments-download-status">API documentation</a> for more information.
         /// </remarks>
-        /// <param name="environmentId">The id of the pre-receive environment</param>
-        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+        /// <param name="preReceiveEnvironmentId">The id of the pre-receive environment</param>
+        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="preReceiveEnvironmentId"/> does not exist.</exception>
         /// <exception cref="ApiException">Thrown when a general API error occurs.</exception>
         [ManualRoute("GET", "/admin/pre-receive-environments/{pre_receive_environment_id}/downloads/latest")]
-        public Task<PreReceiveEnvironmentDownload> DownloadStatus(long environmentId)
+        public Task<PreReceiveEnvironmentDownload> DownloadStatus(long preReceiveEnvironmentId)
         {
-            var endpoint = ApiUrls.AdminPreReceiveEnvironmentDownloadStatus(environmentId);
-            return ApiConnection.Get<PreReceiveEnvironmentDownload>(endpoint, null, AcceptHeaders.PreReceiveEnvironmentsPreview);
+            var endpoint = ApiUrls.AdminPreReceiveEnvironmentDownloadStatus(preReceiveEnvironmentId);
+            return ApiConnection.Get<PreReceiveEnvironmentDownload>(endpoint, null);
         }
 
         /// <summary>
@@ -138,14 +138,14 @@ namespace Octokit
         /// <remarks>
         /// See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#trigger-a-pre-receive-environment-download">API documentation</a> for more information.
         /// </remarks>
-        /// <param name="environmentId">The id of the pre-receive environment</param>
-        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+        /// <param name="preReceiveEnvironmentId">The id of the pre-receive environment</param>
+        /// <exception cref="NotFoundException">Thrown when the specified <paramref name="preReceiveEnvironmentId"/> does not exist.</exception>
         /// <exception cref="ApiException">Thrown when a general API error occurs.</exception>
         [ManualRoute("POST", "/admin/pre-receive-environments/{pre_receive_environment_id}/downloads")]
-        public Task<PreReceiveEnvironmentDownload> TriggerDownload(long environmentId)
+        public Task<PreReceiveEnvironmentDownload> TriggerDownload(long preReceiveEnvironmentId)
         {
-            var endpoint = ApiUrls.AdminPreReceiveEnvironmentDownload(environmentId);
-            return ApiConnection.Post<PreReceiveEnvironmentDownload>(endpoint, new object(), AcceptHeaders.PreReceiveEnvironmentsPreview);
+            var endpoint = ApiUrls.AdminPreReceiveEnvironmentDownload(preReceiveEnvironmentId);
+            return ApiConnection.Post<PreReceiveEnvironmentDownload>(endpoint, new object());
         }
     }
 }

@@ -169,6 +169,36 @@ namespace Octokit.Tests.Clients
                 var client = new TeamsClient(connection);
                 var team = new UpdateTeam("Octokittens");
 
+                var org = "org";
+                var slug = "slug";
+                client.Update(org, slug , team);
+
+                connection.Received().Patch<Team>(
+                    Arg.Is<Uri>(u => u.ToString() == "orgs/org/teams/slug"),
+                    team);
+            }
+
+            [Fact]
+            public async Task EnsuresNonNullArguments()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.Update(null, "b", new UpdateTeam("update-team")));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.Update("a", null, new UpdateTeam("update-team")));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.Update("a", "b", null));
+            }
+        }
+
+        public class TheUpdateTeamLegacyMethod
+        {
+            [Fact]
+            public void RequestsTheCorrectUrl()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+                var team = new UpdateTeam("Octokittens");
+
                 client.Update(1, team);
 
                 connection.Received().Patch<Team>(
@@ -187,6 +217,34 @@ namespace Octokit.Tests.Clients
         }
 
         public class TheDeleteTeamMethod
+        {
+            [Fact]
+            public void RequestsTheCorrectUrl()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                var org = "org";
+                var slug = "slug";
+
+                client.Delete(org, slug);
+
+                connection.Received().Delete(
+                    Arg.Is<Uri>(u => u.ToString() == "orgs/org/teams/slug"));
+            }
+
+            [Fact]
+            public async Task EnsuresNonNullArguments()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.Delete("a", null));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.Delete(null, "a"));
+            }
+        }
+
+        public class TheDeleteTeamLegacyMethod
         {
             [Fact]
             public void RequestsTheCorrectUrl()
@@ -358,7 +416,7 @@ namespace Octokit.Tests.Clients
             {
                 var connection = Substitute.For<IApiConnection>();
                 var client = new TeamsClient(connection);
-                var newPermission = new RepositoryPermissionRequest(Permission.Admin);
+                var newPermission = new RepositoryPermissionRequest(TeamPermissionLegacy.Admin);
 
                 await client.AddRepository(1, "org", "repo", newPermission);
 
@@ -410,8 +468,178 @@ namespace Octokit.Tests.Clients
                 connection.Received().GetAll<OrganizationMembershipInvitation>(
                     Arg.Is<Uri>(u => u.ToString() == "teams/1/invitations"),
                     null,
-                    "application/vnd.github.korra-preview+json",
                     Args.ApiOptions);
+            }
+        }
+
+        public class TheCheckTeamPermissionsForARepositoryMethod
+        {
+            [Fact]
+            public async Task EnsuresNonNullOrEmptyArguments()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.CheckTeamPermissionsForARepository(null, "teamSlug", "owner", "repo"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.CheckTeamPermissionsForARepository("org", null, "owner", "repo"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.CheckTeamPermissionsForARepository("org", "teamSlug", null, "repo"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.CheckTeamPermissionsForARepository("org", "teamSlug", "owner", null));
+            }
+
+            [Fact]
+            public async Task RequestsTheCorrectUrl()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                await client.CheckTeamPermissionsForARepository("org", "teamSlug", "owner", "repo");
+
+                var expected = "/orgs/org/teams/teamSlug/repos/owner/repo";
+
+                connection.Received().Get<TeamRepository>(Arg.Is<Uri>(u => u.ToString() == expected));
+            }
+        }
+
+        public class TheCheckTeamPermissionsForARepositoryWithCustomAcceptHeaderMethod
+        {
+            [Fact]
+            public async Task EnsuresNonNullOrEmptyArguments()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                await Assert.ThrowsAsync<ArgumentNullException>(() => 
+                    client.CheckTeamPermissionsForARepositoryWithCustomAcceptHeader(null, "teamSlug", "owner", "repo"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => 
+                    client.CheckTeamPermissionsForARepositoryWithCustomAcceptHeader("org", null, "owner", "repo"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => 
+                    client.CheckTeamPermissionsForARepositoryWithCustomAcceptHeader("org", "teamSlug", null, "repo"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => 
+                    client.CheckTeamPermissionsForARepositoryWithCustomAcceptHeader("org", "teamSlug", "owner", null));
+            }
+
+            [Fact]
+            public async Task RequestsTheCorrectUrl()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                await client.CheckTeamPermissionsForARepositoryWithCustomAcceptHeader("org", "teamSlug", "owner", "repo");
+
+                var expected = "/orgs/org/teams/teamSlug/repos/owner/repo";
+
+                connection.Received().Get<TeamRepository>(
+                    Arg.Is<Uri>(u => u.ToString() == expected),
+                    null,
+                    Arg.Is<string>(s => s.Equals("application/vnd.github.v3.repository+json")));
+            }
+        }
+
+        public class TheAddOrUpdateTeamRepositoryPermissionsMethod
+        {
+            [Fact]
+            public async Task EnsuresNonNullOrEmptyArguments()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddOrUpdateTeamRepositoryPermissions(null, "teamSlug", "owner", "repo", "permission"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddOrUpdateTeamRepositoryPermissions("org", null, "owner", "repo", "permission"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddOrUpdateTeamRepositoryPermissions("org", "teamSlug", null, "repo", "permission"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddOrUpdateTeamRepositoryPermissions("org", "teamSlug", "owner", null, "permission"));
+            }
+
+            [Fact]
+            public async Task EnsuresNullPermissionValueDoesNotThrow()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+                var exception = await Record.ExceptionAsync(() => client.AddOrUpdateTeamRepositoryPermissions("org", "teamSlug", "owner", "repo", null));
+
+                Assert.Null(exception);
+            }
+
+
+            [Fact]
+            public async Task RequestsTheCorrectUrl()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+                var permission = "a";
+
+                await client.AddOrUpdateTeamRepositoryPermissions("org", "teamSlug", "owner", "repo", permission);
+
+                var expected = "/orgs/org/teams/teamSlug/repos/owner/repo";
+
+                connection.Received().Put(
+                    Arg.Is<Uri>(u => u.ToString() == expected),
+                    Arg.Any<object>());
+            }
+
+            [Fact]
+            public async Task PassesTheCorrestPermission()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+                var permission = "a";
+
+                await client.AddOrUpdateTeamRepositoryPermissions("org", "teamSlug", "owner", "repo", permission);
+
+                connection.Received().Put(
+                    Arg.Any<Uri>(),
+                    Arg.Is<object>(o => o.GetType().GetProperty("permission").GetValue(o).ToString() == "a"));
+            }
+        }
+
+        public class TheRemoveRepositoryFromATeamMethod
+        {
+            [Fact]
+            public async Task EnsuresNonNullOrEmptyArguments()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.RemoveRepositoryFromATeam(null, "teamSlug", "owner", "repo"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.RemoveRepositoryFromATeam("org", null, "owner", "repo"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.RemoveRepositoryFromATeam("org", "teamSlug", null, "repo"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => client.RemoveRepositoryFromATeam("org", "teamSlug", "owner", null));
+            }
+
+            [Fact]
+            public async Task RequestsTheCorrectUrl()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                await client.RemoveRepositoryFromATeam("org", "teamSlug", "owner", "repo");
+
+                var expected = "/orgs/org/teams/teamSlug/repos/owner/repo";
+
+                connection.Received().Delete(Arg.Is<Uri>(u => u.ToString() == expected));
+            }
+        }
+        
+        public class TheGetByNameMethod
+        {
+            [Fact]
+            public void RequestsTheCorrectUrl()
+            {
+                var connection = Substitute.For<IApiConnection>();
+                var client = new TeamsClient(connection);
+
+                client.GetByName("orgName", "teamSlug");
+
+                connection.Received().Get<Team>(
+                    Arg.Is<Uri>(u => u.ToString() == "orgs/orgName/teams/teamSlug"));
+            }
+
+            [Fact]
+            public async Task EnsuresNonNullArguments()
+            {
+                var teams = new TeamsClient(Substitute.For<IApiConnection>());
+
+                await Assert.ThrowsAsync<ArgumentNullException>(() => teams.GetByName(null, "teamSlug"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => teams.GetByName("orgName", null));
             }
         }
     }

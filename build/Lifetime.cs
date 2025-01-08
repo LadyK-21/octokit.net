@@ -8,11 +8,11 @@ using Cake.Core;
 
 public class Lifetime : FrostingLifetime<Context>
 {
-    public override void Setup(Context context)
+    public override void Setup(Context context, ISetupContext setupContext)
     {
         context.Target = context.Argument("target", "Default");
         context.Configuration = context.Argument("configuration", "Release");
-        context.LinkSources = context.Argument("linkSources", false);
+        context.ForceVersion = context.Argument<string>("forceVersion", "0.0.0");
         context.FormatCode = context.Argument("formatCode", false);
 
         context.Artifacts = "./packaging/";
@@ -22,16 +22,8 @@ public class Lifetime : FrostingLifetime<Context>
         context.IsLocalBuild = buildSystem.IsLocalBuild;
 
         context.GitHubActions = buildSystem.GitHubActions.IsRunningOnGitHubActions;
-        context.AppVeyor = buildSystem.AppVeyor.IsRunningOnAppVeyor;
-        context.IsTagged = IsBuildTagged(buildSystem);
 
-        if (context.AppVeyor)
-        {
-            context.IsPullRequest = buildSystem.AppVeyor.Environment.PullRequest.IsPullRequest;
-            context.IsOriginalRepo = StringComparer.OrdinalIgnoreCase.Equals("octokit/octokit.net", buildSystem.AppVeyor.Environment.Repository.Name);
-            context.IsMainBranch = StringComparer.OrdinalIgnoreCase.Equals("main", buildSystem.AppVeyor.Environment.Repository.Branch);
-        }
-        else if (context.GitHubActions)
+        if (context.GitHubActions)
         {
             context.IsPullRequest = buildSystem.GitHubActions.Environment.PullRequest.IsPullRequest;
             context.IsOriginalRepo = StringComparer.OrdinalIgnoreCase.Equals("octokit/octokit.net", buildSystem.GitHubActions.Environment.Workflow.Repository);
@@ -51,27 +43,19 @@ public class Lifetime : FrostingLifetime<Context>
             new Project { Name = "Octokit.Tests.Integration", Path = "./Octokit.Tests.Integration/Octokit.Tests.Integration.csproj", IntegrationTests = true }
         };
 
-        context.GitVersionToolPath = ToolInstaller.DotNetCoreToolInstall(context, "GitVersion.Tool", "5.6.5", "dotnet-gitversion");
-        ToolInstaller.DotNetCoreToolInstall(context, "coverlet.console", "1.7.2", "coverlet");
+        context.GitVersionToolPath = ToolInstaller.DotNetToolInstall(context, "GitVersion.Tool", "5.12.0", "dotnet-gitversion");
+        ToolInstaller.DotNetToolInstall(context, "coverlet.console", "1.7.2", "coverlet");
 
         // Calculate semantic version.
-        context.Version = BuildVersion.Calculate(context);
+        context.Version = context.ForceVersion != "0.0.0" ? new BuildVersion(context.ForceVersion, null, null) : BuildVersion.Calculate(context);
         context.Version.Prefix = context.Argument<string>("version", context.Version.Prefix);
         context.Version.Suffix = context.Argument<string>("suffix", context.Version.Suffix);
 
         context.Information("Version:        {0}", context.Version.Prefix);
         context.Information("Version suffix: {0}", context.Version.Suffix);
         context.Information("Configuration:  {0}", context.Configuration);
-        context.Information("LinkSources:    {0}", context.LinkSources);
         context.Information("Target:         {0}", context.Target);
-        context.Information("AppVeyor:       {0}", context.AppVeyor);
         context.Information("GitHub Actions: {0}", context.GitHubActions);
-    }
-
-    private static bool IsBuildTagged(BuildSystem buildSystem)
-    {
-        return buildSystem.AppVeyor.Environment.Repository.Tag.IsTag
-            && !string.IsNullOrWhiteSpace(buildSystem.AppVeyor.Environment.Repository.Tag.Name);
     }
 
     private static string GetEnvironmentValueOrArgument(Context context, string environmentVariable, string argumentName)

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
 using Octokit.Internal;
+using Octokit.Tests.Helpers;
 using Xunit;
 
 using static Octokit.Internal.TestSetup;
@@ -593,7 +594,7 @@ namespace Octokit.Tests.Clients
                 var client = GetTestingEventsClient(jsonObj);
 
                 var activities = await client.GetAll();
-                Assert.Equal(1, activities.Count);
+                Assert.Single(activities);
                 var activity = activities.FirstOrDefault();
                 Assert.Equal(kvp.Value, activity.Payload.GetType());
                 Assert.NotNull(activity.Payload.Repository);
@@ -622,7 +623,7 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as CommitCommentPayload;
             Assert.Equal(1337, payload.Comment.Id);
@@ -637,7 +638,7 @@ namespace Octokit.Tests.Clients
                 {
                     "payload", new
                     {
-                        @ref = "master",
+                        @ref = GitHubConstants.DefaultBranchName,
                         ref_type = "branch",
                     }
                 }
@@ -645,10 +646,10 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as CreateEventPayload;
-            Assert.Equal("master", payload.Ref);
+            Assert.Equal(GitHubConstants.DefaultBranchName, payload.Ref);
             Assert.Equal(RefType.Branch, payload.RefType);
         }
 
@@ -661,7 +662,7 @@ namespace Octokit.Tests.Clients
                 {
                     "payload", new
                     {
-                        @ref = "master",
+                        @ref = GitHubConstants.DefaultBranchName,
                         ref_type = "branch",
                     }
                 }
@@ -669,10 +670,10 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as DeleteEventPayload;
-            Assert.Equal("master", payload.Ref);
+            Assert.Equal(GitHubConstants.DefaultBranchName, payload.Ref);
             Assert.Equal(RefType.Branch, payload.RefType);
         }
 
@@ -695,7 +696,7 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as ForkEventPayload;
             Assert.Equal(1337, payload.Forkee.Id);
@@ -725,7 +726,7 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as IssueCommentPayload;
             Assert.Equal("created", payload.Action);
@@ -761,7 +762,7 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as IssueEventPayload;
             Assert.Equal("created", payload.Action);
@@ -791,7 +792,7 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as PullRequestEventPayload;
             Assert.Equal("assigned", payload.Action);
@@ -825,7 +826,7 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as PullRequestReviewEventPayload;
             Assert.Equal("submitted", payload.Action);
@@ -860,7 +861,7 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as PullRequestCommentPayload;
             Assert.Equal("assigned", payload.Action);
@@ -880,6 +881,9 @@ namespace Octokit.Tests.Clients
                         head = "head",
                         @ref = "ref",
                         size = 1337,
+                        before = "before",
+                        distinct_size = 1337,
+                        push_id = 1337,
                         commits = new []
                         {
                             new
@@ -893,15 +897,18 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as PushEventPayload;
             Assert.Equal("head", payload.Head);
             Assert.Equal("ref", payload.Ref);
             Assert.Equal(1337, payload.Size);
             Assert.NotNull(payload.Commits);
-            Assert.Equal(1, payload.Commits.Count);
+            Assert.Single(payload.Commits);
             Assert.Equal("message", payload.Commits.FirstOrDefault().Message);
+            Assert.Equal("before", payload.Before);
+            Assert.Equal(1337, payload.DistinctSize);
+            Assert.Equal(1337, payload.PushId);
         }
 
         [Fact]
@@ -955,7 +962,7 @@ namespace Octokit.Tests.Clients
                         {
                             new
                             {
-                                name = "master",
+                                name = GitHubConstants.DefaultBranchName,
                                 commit = new
                                 {
                                     sha = "9049f1265b7d61be4a8904a9a27120d2064dab3b",
@@ -970,7 +977,7 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as StatusEventPayload;
             Assert.Equal(214015194, payload.Id);
@@ -980,7 +987,7 @@ namespace Octokit.Tests.Clients
             Assert.Equal("default", payload.Context);
             Assert.Equal("some human readable text", payload.Description);
             Assert.Equal(CommitState.Success, payload.State.Value);
-            Assert.Equal(1, payload.Branches.Count);
+            Assert.Single(payload.Branches);
             Assert.Equal(new DateTimeOffset(2015, 05, 05, 23, 40, 39, TimeSpan.Zero), payload.CreatedAt);
         }
 
@@ -1000,7 +1007,7 @@ namespace Octokit.Tests.Clients
 
             var client = GetTestingEventsClient(jsonObj);
             var activities = await client.GetAll();
-            Assert.Equal(1, activities.Count);
+            Assert.Single(activities);
 
             var payload = activities.FirstOrDefault().Payload as StarredEventPayload;
             Assert.Equal("started", payload.Action);

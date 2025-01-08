@@ -5,9 +5,9 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
-using System.Threading.Tasks;
 using Octokit.Reactive.Clients;
 using Octokit.Reactive.Internal;
+
 
 namespace Octokit.Reactive
 {
@@ -27,11 +27,13 @@ namespace Octokit.Reactive
             Forks = new ObservableRepositoryForksClient(client);
             Collaborator = new ObservableRepoCollaboratorsClient(client);
             Deployment = new ObservableDeploymentsClient(client);
+            Environment = new ObservableEnvironmentsClient(client);
             Statistics = new ObservableStatisticsClient(client);
             PullRequest = new ObservablePullRequestsClient(client);
             Branch = new ObservableRepositoryBranchesClient(client);
             Comment = new ObservableRepositoryCommentsClient(client);
             Commit = new ObservableRepositoryCommitsClient(client);
+            CustomProperty = new ObservableRepositoryCustomPropertiesClient(client);
             Release = new ObservableReleasesClient(client);
             DeployKeys = new ObservableRepositoryDeployKeysClient(client);
             Content = new ObservableRepositoryContentsClient(client);
@@ -40,6 +42,8 @@ namespace Octokit.Reactive
             Invitation = new ObservableRepositoryInvitationsClient(client);
             Traffic = new ObservableRepositoryTrafficClient(client);
             Project = new ObservableProjectsClient(client);
+            Actions = new ObservableRepositoryActionsClient(client);
+            Autolinks = new ObservableAutolinksClient(client);
         }
 
         /// <summary>
@@ -70,6 +74,24 @@ namespace Octokit.Reactive
                 throw new ArgumentException("The new repository's name must not be null.");
 
             return _client.Create(organizationLogin, newRepository).ToObservable();
+        }
+
+        /// <summary>
+        /// Creates a new repository from a template
+        /// </summary>
+        /// <param name="templateOwner">The organization or person who will owns the template</param>
+        /// <param name="templateRepo">The name of template repository to work from</param>
+        /// <param name="newRepository">A <see cref="NewRepositoryFromTemplate"/> instance describing the new repository to create from a template</param>
+        /// <returns></returns>
+        public IObservable<Repository> Generate(string templateOwner, string templateRepo, NewRepositoryFromTemplate newRepository)
+        {
+            Ensure.ArgumentNotNull(templateOwner, nameof(templateOwner));
+            Ensure.ArgumentNotNull(templateRepo, nameof(templateRepo));
+            Ensure.ArgumentNotNull(newRepository, nameof(newRepository));
+            if (string.IsNullOrEmpty(newRepository.Name))
+                throw new ArgumentException("The new repository's name must not be null.");
+
+            return _client.Generate(templateOwner, templateRepo, newRepository).ToObservable();
         }
 
         /// <summary>
@@ -131,6 +153,23 @@ namespace Octokit.Reactive
             Ensure.ArgumentNotNull(repositoryTransfer, nameof(repositoryTransfer));
 
             return _client.Transfer(repositoryId, repositoryTransfer).ToObservable();
+        }
+
+        /// <summary>
+        /// Checks if vulnerability alerts are enabled for the specified repository.
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/rest/reference/repos#check-if-vulnerability-alerts-are-enabled-for-a-repository">API documentation</a> for more information.
+        /// </remarks>
+        /// <param name="owner">The current owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <returns>A <c>bool</c> indicating if alerts are turned on or not.</returns>
+        public IObservable<bool> AreVulnerabilityAlertsEnabled(string owner, string name)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
+            Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
+
+            return _client.AreVulnerabilityAlertsEnabled(owner, name).ToObservable();
         }
 
         /// <summary>
@@ -311,9 +350,18 @@ namespace Octokit.Reactive
         /// Client for GitHub's Repository Deployments API
         /// </summary>
         /// <remarks>
-        /// See the <a href="http://developer.github.com/v3/repos/deployment/">Collaborators API documentation</a> for more details
+        /// See the <a href="https://docs.github.com/en/rest/deployments/deployments">Deployments API documentation</a> for more details
         /// </remarks>
         public IObservableDeploymentsClient Deployment { get; private set; }
+
+
+        /// <summary>
+        /// Client for GitHub's Repository Environments API
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/en/rest/deployments/environments#about-the-deployment-environments-api/">Environments API documentation</a> for more details
+        /// </remarks>
+        public IObservableRepositoryDeployEnvironmentsClient Environment { get; private set; }
 
         /// <summary>
         /// Client for GitHub's Repository Statistics API
@@ -332,6 +380,14 @@ namespace Octokit.Reactive
         /// See the <a href="http://developer.github.com/v3/repos/comments/">Repository Comments API documentation</a> for more information.
         /// </remarks>
         public IObservableRepositoryCommentsClient Comment { get; private set; }
+
+        /// <summary>
+        /// Client for GitHub's Repository Custom Property Values API.
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="http://developer.github.com/v3/repos/custom-properties/">Repository Custom Property API documentation</a> for more information.
+        /// </remarks>
+        public IObservableRepositoryCustomPropertiesClient CustomProperty { get; private set; }
 
         /// <summary>
         /// A client for GitHub's Repository Hooks API.
@@ -719,6 +775,32 @@ namespace Octokit.Reactive
         }
 
         /// <summary>
+        /// Gets the list of errors in the codeowners file
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <returns>Returns the list of errors in the codeowners files</returns>
+        [ManualRoute("GET", "/repos/{owner}/{repo}/codeowners/errors")]
+        public IObservable<RepositoryCodeOwnersErrors> GetAllCodeOwnersErrors(string owner, string name)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
+            Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
+
+            return _client.GetAllCodeOwnersErrors(owner, name).ToObservable();
+        }
+
+        /// <summary>
+        /// Gets the list of errors in the codeowners file
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <returns>Returns the list of errors in the codeowners files</returns>
+        [ManualRoute("GET", "/repositories/{id}/codeowners/errors")]
+        public IObservable<RepositoryCodeOwnersErrors> GetAllCodeOwnersErrors(long repositoryId)
+        {
+            return _client.GetAllCodeOwnersErrors(repositoryId).ToObservable();
+        }
+
+        /// <summary>
         /// Updates the specified repository with the values given in <paramref name="update"/>
         /// </summary>
         /// <param name="repositoryId">The Id of the repository</param>
@@ -743,6 +825,22 @@ namespace Octokit.Reactive
         {
             return _client.Commit.Compare(owner, name, @base, head).ToObservable();
         }
+
+        /// <summary>
+        /// A client for GitHub's Repository Actions API.
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/en/rest/reference/actions">Actions API documentation</a> for more details
+        /// </remarks>
+        public IObservableRepositoryActionsClient Actions { get; private set; }
+
+        /// <summary>
+        /// A client for GitHub's Repository Autolinks API
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/en/rest/repos/autolinks">API documentation</a> for more information.
+        /// </remarks>
+        public IObservableAutolinksClient Autolinks { get; private set; }
 
         /// <summary>
         /// A client for GitHub's Repository Branches API.
@@ -828,7 +926,7 @@ namespace Octokit.Reactive
         /// Gets all topics for the specified owner and repository name.
         /// </summary>
         /// <remarks>
-        /// See the <a href="https://docs.github.com/en/rest/reference/repos#get-all-repository-topics">API documentation</a> for more details
+        /// See the <a href="https://docs.github.com/rest/reference/repos#get-all-repository-topics">API documentation</a> for more details
         /// </remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
@@ -843,7 +941,7 @@ namespace Octokit.Reactive
         /// Gets all topics for the specified owner and repository name.
         /// </summary>
         /// <remarks>
-        /// See the <a href="https://docs.github.com/en/rest/reference/repos#get-all-repository-topics">API documentation</a> for more details
+        /// See the <a href="https://docs.github.com/rest/reference/repos#get-all-repository-topics">API documentation</a> for more details
         /// </remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
@@ -857,7 +955,7 @@ namespace Octokit.Reactive
         /// Gets all topics for the specified repository ID.
         /// </summary>
         /// <remarks>
-        /// See the <a href="https://docs.github.com/en/rest/reference/repos#get-all-repository-topics">API documentation</a> for more details
+        /// See the <a href="https://docs.github.com/rest/reference/repos#get-all-repository-topics">API documentation</a> for more details
         /// </remarks>
         /// <param name="repositoryId">The ID of the repository</param>
         /// <param name="options">Options for changing the API response</param>
@@ -871,7 +969,7 @@ namespace Octokit.Reactive
         /// Gets all topics for the specified repository ID.
         /// </summary>
         /// <remarks>
-        /// See the <a href="https://docs.github.com/en/rest/reference/repos#get-all-repository-topics">API documentation</a> for more details
+        /// See the <a href="https://docs.github.com/rest/reference/repos#get-all-repository-topics">API documentation</a> for more details
         /// </remarks>
         /// <param name="repositoryId">The ID of the repository</param>
         /// <returns>All topics associated with the repository.</returns>
@@ -884,7 +982,7 @@ namespace Octokit.Reactive
         /// Replaces all topics for the specified repository.
         /// </summary>
         /// <remarks>
-        /// See the <a href="https://docs.github.com/en/rest/reference/repos#replace-all-repository-topics">API documentation</a> for more details
+        /// See the <a href="https://docs.github.com/rest/reference/repos#replace-all-repository-topics">API documentation</a> for more details
         ///
         /// This is a replacement operation; it is not additive. To clear repository topics, for example, you could specify an empty list of topics here.
         /// </remarks>
@@ -900,7 +998,7 @@ namespace Octokit.Reactive
         /// Replaces all topics for the specified repository.
         /// </summary>
         /// <remarks>
-        /// See the <a href="https://docs.github.com/en/rest/reference/repos#replace-all-repository-topics">API documentation</a> for more details
+        /// See the <a href="https://docs.github.com/rest/reference/repos#replace-all-repository-topics">API documentation</a> for more details
         ///
         /// This is a replacement operation; it is not additive. To clear repository topics, for example, you could specify an empty list of topics here.
         /// </remarks>

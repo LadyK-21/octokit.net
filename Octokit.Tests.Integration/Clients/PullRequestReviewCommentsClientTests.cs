@@ -23,7 +23,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
         _client = _github.PullRequest.ReviewComment;
 
         // We'll create a pull request that can be used by most tests
-        _context = _github.CreateRepositoryContext("test-repo").Result;
+        _context = _github.CreateRepositoryContextWithAutoInit("test-repo").Result;
     }
 
     [IntegrationTest]
@@ -293,7 +293,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
 
         var pullRequestComments = await _client.GetAll(Helper.UserName, _context.RepositoryName, pullRequest.Number, options);
 
-        Assert.Equal(1, pullRequestComments.Count);
+        Assert.Single(pullRequestComments);
     }
 
     [IntegrationTest]
@@ -315,7 +315,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
 
         var pullRequestComments = await _client.GetAll(_context.Repository.Id, pullRequest.Number, options);
 
-        Assert.Equal(1, pullRequestComments.Count);
+        Assert.Single(pullRequestComments);
     }
 
     [IntegrationTest]
@@ -469,7 +469,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
 
         var pullRequestComments = await _client.GetAllForRepository(Helper.UserName, _context.RepositoryName, options);
 
-        Assert.Equal(1, pullRequestComments.Count);
+        Assert.Single(pullRequestComments);
     }
 
     [IntegrationTest]
@@ -491,7 +491,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
 
         var pullRequestComments = await _client.GetAllForRepository(_context.Repository.Id, options);
 
-        Assert.Equal(1, pullRequestComments.Count);
+        Assert.Single(pullRequestComments);
     }
 
     [IntegrationTest]
@@ -689,7 +689,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
 
         var pullRequestComments = await _client.GetAllForRepository(Helper.UserName, _context.RepositoryName, pullRequestReviewCommentRequest, options);
 
-        Assert.Equal(1, pullRequestComments.Count);
+        Assert.Single(pullRequestComments);
     }
 
     [IntegrationTest]
@@ -713,7 +713,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
 
         var pullRequestComments = await _client.GetAllForRepository(_context.Repository.Id, pullRequestReviewCommentRequest, options);
 
-        Assert.Equal(1, pullRequestComments.Count);
+        Assert.Single(pullRequestComments);
     }
 
     [IntegrationTest]
@@ -785,14 +785,14 @@ public class PullRequestReviewCommentsClientTests : IDisposable
         _context.Dispose();
     }
 
-    async Task<PullRequestReviewComment> CreateComment(string body, int position, string commitId, int number)
+    async Task<PullRequestReviewComment> CreateComment(string body, int position, string commitId, int pullRequestNumber)
     {
-        return await CreateComment(body, position, _context.RepositoryName, commitId, number);
+        return await CreateComment(body, position, _context.RepositoryName, commitId, pullRequestNumber);
     }
 
-    async Task<PullRequestReviewComment> CreateCommentWithRepositoryId(string body, int position, string commitId, int number)
+    async Task<PullRequestReviewComment> CreateCommentWithRepositoryId(string body, int position, string commitId, int pullRequestNumber)
     {
-        return await CreateComment(body, position, _context.Repository.Id, commitId, number);
+        return await CreateComment(body, position, _context.Repository.Id, commitId, pullRequestNumber);
     }
 
     async Task<PullRequestReviewComment> CreateComment(string body, int position, string repoName, string pullRequestCommitId, int pullRequestNumber)
@@ -844,7 +844,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
     }
 
     /// <summary>
-    /// Creates the base state for testing (creates a repo, a commit in master, a branch, a commit in the branch and a pull request)
+    /// Creates the base state for testing (creates a repo, a commit in main, a branch, a commit in the branch and a pull request)
     /// </summary>
     /// <returns></returns>
     async Task<PullRequestData> CreatePullRequest(RepositoryContext context, string branch = branchName)
@@ -855,13 +855,13 @@ public class PullRequestReviewCommentsClientTests : IDisposable
 
         var repoName = context.RepositoryName;
 
-        // Creating a commit in master
+        // Creating a commit in main
 
-        var createdCommitInMaster = await CreateCommit(repoName, "Hello World!", "README.md", "heads/master", "A master commit message");
+        var createdCommitInMain = await CreateCommit(repoName, "Hello World!", "README.md", "heads/main", "A main commit message");
 
         // Creating a branch
 
-        var newBranch = new NewReference(branchRef, createdCommitInMaster.Sha);
+        var newBranch = new NewReference(branchRef, createdCommitInMain.Sha);
         await _github.Git.Reference.Create(Helper.UserName, repoName, newBranch);
 
         // Creating a commit in the branch
@@ -870,7 +870,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
 
         // Creating a pull request
 
-        var pullRequest = new NewPullRequest("Nice title for the pull request", branch, "master");
+        var pullRequest = new NewPullRequest("Nice title for the pull request", branch, "main");
         var createdPullRequest = await _github.PullRequest.Create(Helper.UserName, repoName, pullRequest);
 
         var data = new PullRequestData
@@ -926,9 +926,9 @@ public class PullRequestReviewCommentsClientTests : IDisposable
     public async Task CanGetReactionPayloadForPullRequestReviews()
     {
         int numberToCreate = 2;
-        using (var context = await _github.CreateRepositoryContext(Helper.MakeNameWithTimestamp("PullRequestReviewCommentsReactionTests")))
+        using (var context = await _github.CreateRepositoryContextWithAutoInit(Helper.MakeNameWithTimestamp("PullRequestReviewCommentsReactionTests")))
         {
-            var commentIds = new List<int>();
+            var commentIds = new List<long>();
 
             // Create a test pull request
             var pullRequest = await CreatePullRequest(context);
@@ -965,9 +965,9 @@ public class PullRequestReviewCommentsClientTests : IDisposable
     public async Task CanGetReactionPayloadForRepositoryPullRequestReviews()
     {
         int numberToCreate = 2;
-        using (var context = await _github.CreateRepositoryContext(Helper.MakeNameWithTimestamp("PullRequestReviewCommentsReactionTests")))
+        using (var context = await _github.CreateRepositoryContextWithAutoInit(Helper.MakeNameWithTimestamp("PullRequestReviewCommentsReactionTests")))
         {
-            var commentIds = new List<int>();
+            var commentIds = new List<long>();
 
             // Create multiple test pull requests
             for (int count = 1; count <= numberToCreate; count++)
@@ -1000,7 +1000,7 @@ public class PullRequestReviewCommentsClientTests : IDisposable
         }
     }
 
-    async Task<int> HelperCreatePullRequestReviewCommentWithReactions(string owner, string repo, PullRequestData pullRequest)
+    async Task<long> HelperCreatePullRequestReviewCommentWithReactions(string owner, string repo, PullRequestData pullRequest)
     {
         var github = Helper.GetAuthenticatedClient();
 

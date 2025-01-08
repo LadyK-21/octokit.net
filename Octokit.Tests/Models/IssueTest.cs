@@ -120,7 +120,20 @@ public class IssueTest
 ""events_url"": ""https://api.github.com/users/octocat/events{/privacy}"",
 ""received_events_url"": ""https://api.github.com/users/octocat/received_events"",
 ""type"": ""User"",
-""site_admin"": false
+""site_admin"": false,
+},
+""active_lock_reason"": null,
+""reactions"": {
+""url"": ""https://api.github.com/repos/octocat/Hello-World/issues/1347/reactions"",
+""total_count"": 5,
+""+1"": 1,
+""-1"": 2,
+""laugh"": 0,
+""hooray"": 0,
+""confused"": 0,
+""heart"": 0,
+""rocket"": 1,
+""eyes"": 1
 }
 }";
         var serializer = new SimpleJsonSerializer();
@@ -130,6 +143,17 @@ public class IssueTest
         Assert.Equal(1347, issue.Number);
         Assert.Equal("octocat", issue.User.Login);
         Assert.Equal("bug", issue.Labels.First().Name);
+        Assert.Null(issue.ActiveLockReason);
+
+        Assert.Equal(5, issue.Reactions.TotalCount);
+        Assert.Equal(1, issue.Reactions.Plus1);
+        Assert.Equal(2, issue.Reactions.Minus1);
+        Assert.Equal(0, issue.Reactions.Laugh);
+        Assert.Equal(0, issue.Reactions.Hooray);
+        Assert.Equal(0, issue.Reactions.Confused);
+        Assert.Equal(0, issue.Reactions.Heart);
+        Assert.Equal(1, issue.Reactions.Rocket);
+        Assert.Equal(1, issue.Reactions.Eyes);
     }
 
     public class TheToUpdateMethod
@@ -143,6 +167,7 @@ public class IssueTest
 ""html_url"": ""https://github.com/octocat/Hello-World/issues/1347"",
 ""number"": 1347,
 ""state"": ""open"",
+""state_reason"": ""reopened"",
 ""title"": ""Found a bug"",
 ""body"": ""I'm having a problem with this."",
 ""user"": {
@@ -281,6 +306,7 @@ public class IssueTest
             Assert.NotNull(update.Labels);
             Assert.Equal(1, update.Milestone.GetValueOrDefault());
             Assert.Equal("octocat", update.Assignees.FirstOrDefault());
+            Assert.Equal(ItemStateReason.Reopened, update.StateReason.GetValueOrDefault());
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Octokit.Reactive.Internal
     {
         public static IObservable<T> GetAndFlattenAllPages<T>(this IConnection connection, Uri url)
         {
-            return GetPages(url, null, (pageUrl, pageParams) => connection.Get<List<T>>(pageUrl, null, null).ToObservable());
+            return GetPages(url, null, (pageUrl, pageParams) => connection.Get<List<T>>(pageUrl, null).ToObservable());
         }
 
         public static IObservable<T> GetAndFlattenAllPages<T>(this IConnection connection, Uri url, ApiOptions options)
@@ -20,7 +20,7 @@ namespace Octokit.Reactive.Internal
 
         public static IObservable<T> GetAndFlattenAllPages<T>(this IConnection connection, Uri url, IDictionary<string, string> parameters)
         {
-            return GetPages(url, parameters, (pageUrl, pageParams) => connection.Get<List<T>>(pageUrl, pageParams, null).ToObservable());
+            return GetPages(url, parameters, (pageUrl, pageParams) => connection.Get<List<T>>(pageUrl, pageParams).ToObservable());
         }
 
         public static IObservable<T> GetAndFlattenAllPages<T>(this IConnection connection, Uri url, IDictionary<string, string> parameters, ApiOptions options)
@@ -28,7 +28,7 @@ namespace Octokit.Reactive.Internal
             return GetPagesWithOptions(url, parameters, options, (pageUrl, pageParams, o) =>
             {
                 var passingParameters = Pagination.Setup(parameters, options);
-                return connection.Get<List<T>>(pageUrl, passingParameters, null).ToObservable();
+                return connection.Get<List<T>>(pageUrl, passingParameters).ToObservable();
             });
         }
 
@@ -40,6 +40,15 @@ namespace Octokit.Reactive.Internal
         public static IObservable<T> GetAndFlattenAllPages<T>(this IConnection connection, Uri url, IDictionary<string, string> parameters, string accepts, ApiOptions options)
         {
             return GetPagesWithOptions(url, parameters, options, (pageUrl, pageParams, o) =>
+            {
+                var passingParameters = Pagination.Setup(parameters, options);
+                return connection.Get<List<T>>(pageUrl, passingParameters, accepts).ToObservable();
+            });
+        }
+
+        public static IObservable<T> GetAndFlattenAllPages<T>(this IConnection connection, Uri url, IDictionary<string, string> parameters, string accepts, ApiOptions options, Func<object, object> preprocessResponseBody)
+        {
+            return GetPagesWithOptionsAndCallback(url, parameters, options, preprocessResponseBody, (pageUrl, pageParams, o, preprocess) =>
             {
                 var passingParameters = Pagination.Setup(parameters, options);
                 return connection.Get<List<T>>(pageUrl, passingParameters, accepts).ToObservable();
@@ -70,6 +79,22 @@ namespace Octokit.Reactive.Internal
 
                 return shouldContinue
                 ? Observable.Defer(() => getPageFunc(nextPageUrl, null, null))
+                : Observable.Empty<IApiResponse<List<T>>>();
+            })
+            .Where(resp => resp != null)
+            .SelectMany(resp => resp.Body);
+        }
+
+        static IObservable<T> GetPagesWithOptionsAndCallback<T>(Uri uri, IDictionary<string, string> parameters, ApiOptions options, Func<object, object> preprocessResponseBody, Func<Uri, IDictionary<string, string>, ApiOptions, Func<object, object>, IObservable<IApiResponse<List<T>>>> getPageFunc)
+        {
+            return getPageFunc(uri, parameters, options, preprocessResponseBody).Expand(resp =>
+            {
+                var nextPageUrl = resp.HttpResponse.ApiInfo.GetNextPageUrl();
+
+                var shouldContinue = Pagination.ShouldContinue(nextPageUrl, options);
+
+                return shouldContinue
+                ? Observable.Defer(() => getPageFunc(nextPageUrl, null, null, preprocessResponseBody))
                 : Observable.Empty<IApiResponse<List<T>>>();
             })
             .Where(resp => resp != null)

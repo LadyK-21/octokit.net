@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -32,7 +32,7 @@ public class ReleasesClientTests
             var github = Helper.GetAuthenticatedClient();
             _releaseClient = github.Repository.Release;
 
-            _context = github.CreateRepositoryContext("public-repo").Result;
+            _context = github.CreateRepositoryContextWithAutoInit("public-repo").Result;
         }
 
         [IntegrationTest]
@@ -55,6 +55,21 @@ public class ReleasesClientTests
             Assert.NotNull(release);
         }
 
+        [IntegrationTest]
+        public async Task CreateReleaseAsLatest()
+        {
+            var firstReleaseRequest = new NewRelease("0.1") { MakeLatest = MakeLatestQualifier.False };
+            await _releaseClient.Create(_context.Repository.Id, firstReleaseRequest);
+
+            await Assert.ThrowsAsync<NotFoundException>(async () => await _releaseClient.GetLatest(_context.RepositoryOwner, _context.RepositoryName));
+
+            var secondReleaseRequest = new NewRelease("0.2") { MakeLatest = MakeLatestQualifier.True };
+            var secondRelease = await _releaseClient.Create(_context.Repository.Id, secondReleaseRequest);
+
+            var latestRelease = await _releaseClient.GetLatest(_context.RepositoryOwner, _context.RepositoryName);
+            Assert.Equal(secondRelease.Id, latestRelease.Id);
+        }
+
         public void Dispose()
         {
             _context.Dispose();
@@ -71,7 +86,7 @@ public class ReleasesClientTests
             var github = Helper.GetAuthenticatedClient();
             _releaseClient = github.Repository.Release;
 
-            _context = github.CreateRepositoryContext("public-repo").Result;
+            _context = github.CreateRepositoryContextWithAutoInit("public-repo").Result;
         }
 
         [IntegrationTest]
@@ -100,7 +115,7 @@ public class ReleasesClientTests
             var release = await _releaseClient.Get("git-tfs", "git-tfs", 2276624);
 
             Assert.NotNull(release);
-            Assert.Equal(1, release.Assets.Count);
+            Assert.Single(release.Assets);
             Assert.Equal("GitTfs-0.24.1.zip", release.Assets.First().Name);
             Assert.Equal("https://api.github.com/repos/git-tfs/git-tfs/tarball/v0.24.1", release.TarballUrl);
             Assert.Equal("https://api.github.com/repos/git-tfs/git-tfs/zipball/v0.24.1", release.ZipballUrl);
@@ -112,7 +127,7 @@ public class ReleasesClientTests
             var release = await _releaseClient.Get(252774, 2276624);
 
             Assert.NotNull(release);
-            Assert.Equal(1, release.Assets.Count);
+            Assert.Single(release.Assets);
             Assert.Equal("GitTfs-0.24.1.zip", release.Assets.First().Name);
             Assert.Equal("https://api.github.com/repos/git-tfs/git-tfs/tarball/v0.24.1", release.TarballUrl);
             Assert.Equal("https://api.github.com/repos/git-tfs/git-tfs/zipball/v0.24.1", release.ZipballUrl);
@@ -145,7 +160,7 @@ public class ReleasesClientTests
 
             var releases = await _releaseClient.GetAll(_context.RepositoryOwner, _context.RepositoryName);
 
-            Assert.True(releases.Count == 1);
+            Assert.Single(releases);
             Assert.False(releases.First().PublishedAt.HasValue);
         }
 
@@ -158,7 +173,7 @@ public class ReleasesClientTests
 
             var releases = await _releaseClient.GetAll(_context.Repository.Id);
 
-            Assert.True(releases.Count == 1);
+            Assert.Single(releases);
             Assert.False(releases.First().PublishedAt.HasValue);
         }
 
@@ -365,7 +380,7 @@ public class ReleasesClientTests
             _github = Helper.GetAuthenticatedClient();
             _releaseClient = _github.Repository.Release;
 
-            _context = _github.CreateRepositoryContext("public-repo").Result;
+            _context = _github.CreateRepositoryContextWithAutoInit("public-repo").Result;
         }
 
         [IntegrationTest]
@@ -408,7 +423,7 @@ public class ReleasesClientTests
             var releaseWithNoUpdate = new NewRelease("0.1") { Draft = true };
             var release = await _releaseClient.Create(_context.RepositoryOwner, _context.RepositoryName, releaseWithNoUpdate);
 
-            Assert.Equal("master", release.TargetCommitish);
+            Assert.Equal("main", release.TargetCommitish);
 
             var newHead = await _github.CreateTheWorld(_context.Repository);
 
@@ -429,7 +444,7 @@ public class ReleasesClientTests
             var releaseWithNoUpdate = new NewRelease("0.1") { Draft = true };
             var release = await _releaseClient.Create(_context.Repository.Id, releaseWithNoUpdate);
 
-            Assert.Equal("master", release.TargetCommitish);
+            Assert.Equal("main", release.TargetCommitish);
 
             var newHead = await _github.CreateTheWorld(_context.Repository);
 
@@ -442,6 +457,28 @@ public class ReleasesClientTests
             Assert.Equal(release.Id, updatedRelease.Id);
             Assert.False(updatedRelease.Draft);
             Assert.Equal(newHead.Object.Sha, updatedRelease.TargetCommitish);
+        }
+
+        [IntegrationTest]
+        public async Task CanMakeReleaseLatest()
+        {
+            var firstReleaseRequest = new NewRelease("0.1");
+            var firstRelease = await _releaseClient.Create(_context.RepositoryOwner, _context.RepositoryName, firstReleaseRequest);
+
+            var secondReleaseRequest = new NewRelease("0.2") { Draft = true };
+            var secondRelease = await _releaseClient.Create(_context.RepositoryOwner, _context.RepositoryName, secondReleaseRequest);
+
+            var latestRelease = await _releaseClient.GetLatest(_context.RepositoryOwner, _context.RepositoryName);
+            Assert.Equal(firstRelease.Id, latestRelease.Id);
+
+            var editRelease = secondRelease.ToUpdate();
+            editRelease.Draft = false;
+            editRelease.MakeLatest = MakeLatestQualifier.True;
+
+            await _releaseClient.Edit(_context.RepositoryOwner, _context.RepositoryName, secondRelease.Id, editRelease);
+
+            latestRelease = await _releaseClient.GetLatest(_context.RepositoryOwner, _context.RepositoryName);
+            Assert.Equal(secondRelease.Id, latestRelease.Id);
         }
 
         public void Dispose()
@@ -465,7 +502,7 @@ public class ReleasesClientTests
             _github = Helper.GetAuthenticatedClient();
             _releaseClient = _github.Repository.Release;
 
-            _context = _github.CreateRepositoryContext("public-repo").Result;
+            _context = _github.CreateRepositoryContextWithAutoInit("public-repo").Result;
         }
 
         [IntegrationTest]
@@ -484,7 +521,7 @@ public class ReleasesClientTests
 
             var assets = await _releaseClient.GetAllAssets(_context.RepositoryOwner, _context.RepositoryName, release.Id);
 
-            Assert.Equal(1, assets.Count);
+            Assert.Single(assets);
             var asset = assets[0];
             Assert.Equal(result.Id, asset.Id);
             Assert.NotNull(asset.Url);
@@ -507,7 +544,7 @@ public class ReleasesClientTests
 
             var assets = await _releaseClient.GetAllAssets(_context.Repository.Id, release.Id);
 
-            Assert.Equal(1, assets.Count);
+            Assert.Single(assets);
             var asset = assets[0];
             Assert.Equal(result.Id, asset.Id);
             Assert.NotNull(asset.Url);
@@ -679,7 +716,7 @@ public class ReleasesClientTests
 
             var assets = await _releaseClient.GetAllAssets(owner, name, releaseId, options);
 
-            Assert.Equal(1, assets.Count);
+            Assert.Single(assets);
         }
 
         [IntegrationTest]
@@ -694,7 +731,7 @@ public class ReleasesClientTests
 
             var assets = await _releaseClient.GetAllAssets(repositoryId, releaseId, options);
 
-            Assert.Equal(1, assets.Count);
+            Assert.Single(assets);
         }
 
         [IntegrationTest]
@@ -812,7 +849,7 @@ public class ReleasesClientTests
             _github = Helper.GetAuthenticatedClient();
             _releaseClient = _github.Repository.Release;
 
-            _context = _github.CreateRepositoryContext("public-repo").Result;
+            _context = _github.CreateRepositoryContextWithAutoInit("public-repo").Result;
         }
 
         [IntegrationTest]
@@ -867,7 +904,7 @@ public class ReleasesClientTests
             _github = Helper.GetAuthenticatedClient();
             _releaseClient = _github.Repository.Release;
 
-            _context = _github.CreateRepositoryContext("public-repo").Result;
+            _context = _github.CreateRepositoryContextWithAutoInit("public-repo").Result;
         }
 
         [IntegrationTest]

@@ -11,8 +11,8 @@ namespace Octokit.Tests.Integration.Reactive
     {
         public class TheGetMethod
         {
-            IObservableGitHubClient _github;
-            IObservableGitHubClient _githubAppInstallation;
+            readonly IObservableGitHubClient _github;
+            readonly IObservableGitHubClient _githubAppInstallation;
 
             public TheGetMethod()
             {
@@ -28,7 +28,7 @@ namespace Octokit.Tests.Integration.Reactive
                 using (var repoContext = await _github.CreateRepositoryContext(new NewRepository(Helper.MakeNameWithTimestamp("public-repo")) { AutoInit = true }))
                 {
                     // Need to get a CheckSuiteId so we can test the Get method
-                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryOwner, repoContext.RepositoryName, "master");
+                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryOwner, repoContext.RepositoryName, "main");
                     var checkSuite = (await _githubAppInstallation.Check.Suite.GetAllForReference(repoContext.RepositoryOwner, repoContext.RepositoryName, headCommit.Sha)).CheckSuites.First();
 
                     // Get Check Suite by Id
@@ -46,7 +46,7 @@ namespace Octokit.Tests.Integration.Reactive
                 using (var repoContext = await _github.CreateRepositoryContext(new NewRepository(Helper.MakeNameWithTimestamp("public-repo")) { AutoInit = true }))
                 {
                     // Need to get a CheckSuiteId so we can test the Get method
-                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "master");
+                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "main");
                     var checkSuite = (await _githubAppInstallation.Check.Suite.GetAllForReference(repoContext.RepositoryId, headCommit.Sha)).CheckSuites.First();
 
                     // Get Check Suite by Id
@@ -61,8 +61,8 @@ namespace Octokit.Tests.Integration.Reactive
 
         public class TheGetAllForReferenceMethod
         {
-            IObservableGitHubClient _github;
-            IObservableGitHubClient _githubAppInstallation;
+            readonly IObservableGitHubClient _github;
+            readonly IObservableGitHubClient _githubAppInstallation;
 
             public TheGetAllForReferenceMethod()
             {
@@ -77,7 +77,7 @@ namespace Octokit.Tests.Integration.Reactive
             {
                 using (var repoContext = await _github.CreateRepositoryContext(new NewRepository(Helper.MakeNameWithTimestamp("public-repo")) { AutoInit = true }))
                 {
-                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryOwner, repoContext.RepositoryName, "master");
+                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryOwner, repoContext.RepositoryName, "main");
 
                     var checkSuites = await _githubAppInstallation.Check.Suite.GetAllForReference(repoContext.RepositoryOwner, repoContext.RepositoryName, headCommit.Sha);
 
@@ -94,7 +94,7 @@ namespace Octokit.Tests.Integration.Reactive
             {
                 using (var repoContext = await _github.CreateRepositoryContext(new NewRepository(Helper.MakeNameWithTimestamp("public-repo")) { AutoInit = true }))
                 {
-                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "master");
+                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "main");
 
                     var checkSuites = await _githubAppInstallation.Check.Suite.GetAllForReference(repoContext.RepositoryId, headCommit.Sha);
 
@@ -109,8 +109,8 @@ namespace Octokit.Tests.Integration.Reactive
 
         public class TheUpdatePreferencesMethod
         {
-            IObservableGitHubClient _github;
-            IObservableGitHubClient _githubAppInstallation;
+            readonly IObservableGitHubClient _github;
+            readonly IObservableGitHubClient _githubAppInstallation;
 
             public TheUpdatePreferencesMethod()
             {
@@ -157,8 +157,8 @@ namespace Octokit.Tests.Integration.Reactive
 
         public class TheCreateMethod
         {
-            IObservableGitHubClient _github;
-            IObservableGitHubClient _githubAppInstallation;
+            readonly IObservableGitHubClient _github;
+            readonly IObservableGitHubClient _githubAppInstallation;
 
             public TheCreateMethod()
             {
@@ -178,7 +178,7 @@ namespace Octokit.Tests.Integration.Reactive
                     await _githubAppInstallation.Check.Suite.UpdatePreferences(repoContext.RepositoryOwner, repoContext.RepositoryName, preference);
 
                     // Create a new feature branch
-                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryOwner, repoContext.RepositoryName, "master");
+                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryOwner, repoContext.RepositoryName, "main");
                     var featureBranch = await Helper.CreateFeatureBranch(repoContext.RepositoryOwner, repoContext.RepositoryName, headCommit.Sha, "my-feature");
 
                     // Create a check suite for the feature branch
@@ -201,7 +201,7 @@ namespace Octokit.Tests.Integration.Reactive
                     await _githubAppInstallation.Check.Suite.UpdatePreferences(repoContext.RepositoryId, preference);
 
                     // Create a new feature branch
-                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "master");
+                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "main");
                     var featureBranch = await Helper.CreateFeatureBranch(repoContext.RepositoryOwner, repoContext.RepositoryName, headCommit.Sha, "my-feature");
 
                     // Create a check suite for the feature branch
@@ -217,8 +217,8 @@ namespace Octokit.Tests.Integration.Reactive
 
         public class TheRerequestMethod
         {
-            IObservableGitHubClient _github;
-            IObservableGitHubClient _githubAppInstallation;
+            readonly IObservableGitHubClient _github;
+            readonly IObservableGitHubClient _githubAppInstallation;
 
             public TheRerequestMethod()
             {
@@ -234,7 +234,7 @@ namespace Octokit.Tests.Integration.Reactive
                 using (var repoContext = await _github.CreateRepositoryContext(new NewRepository(Helper.MakeNameWithTimestamp("public-repo")) { AutoInit = true }))
                 {
                     // Need to get a CheckSuiteId so we can test the Get method
-                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "master");
+                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "main");
                     var checkSuite = (await _githubAppInstallation.Check.Suite.GetAllForReference(repoContext.RepositoryId, headCommit.Sha)).CheckSuites.First();
 
                     var result = await _githubAppInstallation.Check.Suite.Rerequest(repoContext.RepositoryOwner, repoContext.RepositoryName, checkSuite.Id);
@@ -249,7 +249,7 @@ namespace Octokit.Tests.Integration.Reactive
                 using (var repoContext = await _github.CreateRepositoryContext(new NewRepository(Helper.MakeNameWithTimestamp("public-repo")) { AutoInit = true }))
                 {
                     // Need to get a CheckSuiteId so we can test the Get method
-                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "master");
+                    var headCommit = await _github.Repository.Commit.Get(repoContext.RepositoryId, "main");
                     var checkSuite = (await _githubAppInstallation.Check.Suite.GetAllForReference(repoContext.RepositoryId, headCommit.Sha)).CheckSuites.First();
 
                     var result = await _githubAppInstallation.Check.Suite.Rerequest(repoContext.RepositoryId, checkSuite.Id);

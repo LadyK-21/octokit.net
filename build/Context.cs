@@ -1,6 +1,6 @@
 using Cake.Common;
 using Cake.Common.Diagnostics;
-using Cake.Common.Tools.DotNetCore.Test;
+using Cake.Common.Tools.DotNet.Test;
 using Cake.Core;
 using Cake.Core.IO;
 using Cake.Frosting;
@@ -9,7 +9,7 @@ public class Context : FrostingContext
 {
     public string Target { get; set; }
     public new string Configuration { get; set; }
-    public bool LinkSources { get; set; }
+    public string ForceVersion { get; set; }
     public bool FormatCode { get; set; }
     public BuildVersion Version { get; set; }
 
@@ -17,20 +17,17 @@ public class Context : FrostingContext
     public bool IsLocalBuild { get; set; }
     public bool IsPullRequest { get; set; }
     public bool IsOriginalRepo { get; set; }
-    public bool IsTagged { get; set; }
     public bool IsMainBranch { get; set; }
     public bool ForcePublish { get; set; }
-
-    public bool AppVeyor { get; set; }
     public bool GitHubActions { get; set; }
 
     public Project[] Projects { get; set; }
 
     public FilePath GitVersionToolPath { get; set; }
 
-    public DotNetCoreTestSettings GetTestSettings()
+    public DotNetTestSettings GetTestSettings()
     {
-        var settings = new DotNetCoreTestSettings
+        var settings = new DotNetTestSettings
         {
             Configuration = Configuration,
             NoBuild = true
@@ -38,7 +35,7 @@ public class Context : FrostingContext
 
         if (!this.IsRunningOnWindows())
         {
-            var testFramework = "netcoreapp3.1";
+            var testFramework = "net6.0";
 
             this.Information($"Running tests against {testFramework} only as we're not on Windows.");
             settings.Framework = testFramework;

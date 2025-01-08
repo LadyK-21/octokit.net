@@ -25,7 +25,7 @@ public class PullRequestReviewCommentReactionsClientTests : IDisposable
         _client = _github.PullRequest.ReviewComment;
 
         // We'll create a pull request that can be used by most tests
-        _context = _github.CreateRepositoryContext("test-repo").Result;
+        _context = _github.CreateUserRepositoryContext("test-repo").Result;
     }
 
     [IntegrationTest]
@@ -75,7 +75,7 @@ public class PullRequestReviewCommentReactionsClientTests : IDisposable
 
         var reactions = await _github.Reaction.PullRequestReviewComment.GetAll(_context.RepositoryOwner, _context.RepositoryName, commentFromGitHub.Id, options);
 
-        Assert.Equal(1, reactions.Count);
+        Assert.Single(reactions);
         Assert.Equal(reaction.Id, reactions[0].Id);
         Assert.Equal(reaction.Content, reactions[0].Content);
     }
@@ -111,7 +111,7 @@ public class PullRequestReviewCommentReactionsClientTests : IDisposable
 
         var reactionsInfo = await _github.Reaction.PullRequestReviewComment.GetAll(_context.RepositoryOwner, _context.RepositoryName, commentFromGitHub.Id, options);
 
-        Assert.Equal(1, reactionsInfo.Count);
+        Assert.Single(reactionsInfo);
         Assert.Equal(reactions.Last().Id, reactionsInfo[0].Id);
         Assert.Equal(reactions.Last().Content, reactionsInfo[0].Content);
     }
@@ -152,8 +152,8 @@ public class PullRequestReviewCommentReactionsClientTests : IDisposable
         };
         var secondPage = await _github.Reaction.PullRequestReviewComment.GetAll(_context.RepositoryOwner, _context.RepositoryName, commentFromGitHub.Id, skipStartOptions);
 
-        Assert.Equal(1, firstPage.Count);
-        Assert.Equal(1, secondPage.Count);
+        Assert.Single(firstPage);
+        Assert.Single(secondPage);
         Assert.Equal(firstPage[0].Id, secondPage[0].Id);
         Assert.Equal(firstPage[0].Content, secondPage[0].Content);
     }
@@ -205,7 +205,7 @@ public class PullRequestReviewCommentReactionsClientTests : IDisposable
 
         var reactions = await _github.Reaction.PullRequestReviewComment.GetAll(_context.Repository.Id, commentFromGitHub.Id, options);
 
-        Assert.Equal(1, reactions.Count);
+        Assert.Single(reactions);
         Assert.Equal(reaction.Id, reactions[0].Id);
         Assert.Equal(reaction.Content, reactions[0].Content);
     }
@@ -241,7 +241,7 @@ public class PullRequestReviewCommentReactionsClientTests : IDisposable
 
         var reactionsInfo = await _github.Reaction.PullRequestReviewComment.GetAll(_context.Repository.Id, commentFromGitHub.Id, options);
 
-        Assert.Equal(1, reactionsInfo.Count);
+        Assert.Single(reactionsInfo);
         Assert.Equal(reactions.Last().Id, reactionsInfo[0].Id);
         Assert.Equal(reactions.Last().Content, reactionsInfo[0].Content);
     }
@@ -282,8 +282,8 @@ public class PullRequestReviewCommentReactionsClientTests : IDisposable
         };
         var secondPage = await _github.Reaction.PullRequestReviewComment.GetAll(_context.Repository.Id, commentFromGitHub.Id, skipStartOptions);
 
-        Assert.Equal(1, firstPage.Count);
-        Assert.Equal(1, secondPage.Count);
+        Assert.Single(firstPage);
+        Assert.Single(secondPage);
         Assert.Equal(firstPage[0].Id, secondPage[0].Id);
         Assert.Equal(firstPage[0].Content, secondPage[0].Content);
     }
@@ -349,11 +349,11 @@ public class PullRequestReviewCommentReactionsClientTests : IDisposable
 
         // Creating a commit in master
 
-        var createdCommitInMaster = await CreateCommit(repoName, "Hello World!", "README.md", "heads/master", "A master commit message");
+        var createdCommitInMain = await CreateCommit(repoName, "Hello World!", "README.md", "heads/main", "A main commit message");
 
         // Creating a branch
 
-        var newBranch = new NewReference(branchRef, createdCommitInMaster.Sha);
+        var newBranch = new NewReference(branchRef, createdCommitInMain.Sha);
         await _github.Git.Reference.Create(Helper.UserName, repoName, newBranch);
 
         // Creating a commit in the branch
@@ -408,9 +408,9 @@ public class PullRequestReviewCommentReactionsClientTests : IDisposable
         return createdCommit;
     }
 
-    async Task<PullRequestReviewComment> CreateComment(string body, int position, string commitId, int number)
+    async Task<PullRequestReviewComment> CreateComment(string body, int position, string commitId, int pullRequestNumber)
     {
-        return await CreateComment(body, position, _context.RepositoryName, commitId, number);
+        return await CreateComment(body, position, _context.RepositoryName, commitId, pullRequestNumber);
     }
 
     async Task<PullRequestReviewComment> CreateComment(string body, int position, string repoName, string pullRequestCommitId, int pullRequestNumber)

@@ -23,14 +23,14 @@ namespace Octokit
         /// </remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         [ManualRoute("GET", "/repos/{owner}/{repo}/issues/{issue_number}/events")]
-        public Task<IReadOnlyList<IssueEvent>> GetAllForIssue(string owner, string name, int number)
+        public Task<IReadOnlyList<IssueEvent>> GetAllForIssue(string owner, string name, long issueNumber)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
 
-            return GetAllForIssue(owner, name, number, ApiOptions.None);
+            return GetAllForIssue(owner, name, issueNumber, ApiOptions.None);
         }
 
         /// <summary>
@@ -40,11 +40,11 @@ namespace Octokit
         /// http://developer.github.com/v3/issues/events/#list-events-for-an-issue
         /// </remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         [ManualRoute("GET", "/repositories/{id}/issues/{number}/events")]
-        public Task<IReadOnlyList<IssueEvent>> GetAllForIssue(long repositoryId, int number)
+        public Task<IReadOnlyList<IssueEvent>> GetAllForIssue(long repositoryId, long issueNumber)
         {
-            return GetAllForIssue(repositoryId, number, ApiOptions.None);
+            return GetAllForIssue(repositoryId, issueNumber, ApiOptions.None);
         }
 
         /// <summary>
@@ -55,20 +55,16 @@ namespace Octokit
         /// </remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         /// <param name="options">Options for changing the API response</param>
-        [Preview("starfox")]
         [ManualRoute("GET", "/repos/{owner}/{repo}/issues/{issue_number}/events")]
-        public Task<IReadOnlyList<IssueEvent>> GetAllForIssue(string owner, string name, int number, ApiOptions options)
+        public Task<IReadOnlyList<IssueEvent>> GetAllForIssue(string owner, string name, long issueNumber, ApiOptions options)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNull(options, nameof(options));
 
-            return ApiConnection.GetAll<IssueEvent>(ApiUrls.IssuesEvents(owner, name, number),
-                                                    null,
-                                                    AcceptHeaders.IssueEventsApiPreview,
-                                                    options);
+            return ApiConnection.GetAll<IssueEvent>(ApiUrls.IssuesEvents(owner, name, issueNumber), null, options);
         }
 
         /// <summary>
@@ -78,18 +74,14 @@ namespace Octokit
         /// http://developer.github.com/v3/issues/events/#list-events-for-an-issue
         /// </remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         /// <param name="options">Options for changing the API response</param>
-        [Preview("starfox")]
         [ManualRoute("GET", "/repositories/{id}/issues/{number}/events")]
-        public Task<IReadOnlyList<IssueEvent>> GetAllForIssue(long repositoryId, int number, ApiOptions options)
+        public Task<IReadOnlyList<IssueEvent>> GetAllForIssue(long repositoryId, long issueNumber, ApiOptions options)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
 
-            return ApiConnection.GetAll<IssueEvent>(ApiUrls.IssuesEvents(repositoryId, number),
-                                                    null,
-                                                    AcceptHeaders.IssueEventsApiPreview,
-                                                    options);
+            return ApiConnection.GetAll<IssueEvent>(ApiUrls.IssuesEvents(repositoryId, issueNumber), null, options);
         }
 
         /// <summary>
@@ -131,7 +123,6 @@ namespace Octokit
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
         /// <param name="options">Options for changing the API response</param>
-        [Preview("starfox")]
         [ManualRoute("GET", "/repos/{owner}/{repo}/issues/events")]
         public Task<IReadOnlyList<IssueEvent>> GetAllForRepository(string owner, string name, ApiOptions options)
         {
@@ -139,10 +130,7 @@ namespace Octokit
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNull(options, nameof(options));
 
-            return ApiConnection.GetAll<IssueEvent>(ApiUrls.IssuesEvents(owner, name),
-                                                    null,
-                                                    AcceptHeaders.IssueEventsApiPreview,
-                                                    options);
+            return ApiConnection.GetAll<IssueEvent>(ApiUrls.IssuesEvents(owner, name), null, options);
         }
 
         /// <summary>
@@ -153,16 +141,12 @@ namespace Octokit
         /// </remarks>
         /// <param name="repositoryId">The Id of the repository</param>
         /// <param name="options">Options for changing the API response</param>
-        [Preview("starfox")]
         [ManualRoute("GET", "/repositories/{id}/issues/events")]
         public Task<IReadOnlyList<IssueEvent>> GetAllForRepository(long repositoryId, ApiOptions options)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
 
-            return ApiConnection.GetAll<IssueEvent>(ApiUrls.IssuesEvents(repositoryId),
-                                                    null,
-                                                    AcceptHeaders.IssueEventsApiPreview,
-                                                    options);
+            return ApiConnection.GetAll<IssueEvent>(ApiUrls.IssuesEvents(repositoryId), null, options);
         }
 
         /// <summary>
@@ -174,16 +158,13 @@ namespace Octokit
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
         /// <param name="eventId">The event id</param>
-        [Preview("starfox")]
         [ManualRoute("GET", "/repos/{owner}/{repo}/issues/events/{event_id}")]
         public Task<IssueEvent> Get(string owner, string name, long eventId)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
 
-            return ApiConnection.Get<IssueEvent>(ApiUrls.IssuesEvent(owner, name, eventId),
-                                                    null,
-                                                    AcceptHeaders.IssueEventsApiPreview);
+            return ApiConnection.Get<IssueEvent>(ApiUrls.IssuesEvent(owner, name, eventId), null);
         }
 
         /// <summary>
@@ -194,13 +175,10 @@ namespace Octokit
         /// </remarks>
         /// <param name="repositoryId">The Id of the repository</param>
         /// <param name="eventId">The event id</param>
-        [Preview("starfox")]
         [ManualRoute("GET", "/repositories/{id}/issues/events/{event_id}")]
         public Task<IssueEvent> Get(long repositoryId, long eventId)
         {
-            return ApiConnection.Get<IssueEvent>(ApiUrls.IssuesEvent(repositoryId, eventId),
-                                                    null,
-                                                    AcceptHeaders.IssueEventsApiPreview);
+            return ApiConnection.Get<IssueEvent>(ApiUrls.IssuesEvent(repositoryId, eventId), null);
         }
     }
 }

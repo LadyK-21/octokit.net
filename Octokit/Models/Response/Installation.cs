@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Octokit.Internal;
@@ -9,16 +10,18 @@ namespace Octokit
     /// Represents an application installation.
     /// </summary>
     /// <remarks>
-    /// For more information see https://developer.github.com/v3/apps/#find-installations
+    /// For more information see https://docs.github.com/en/rest/apps/installations?apiVersion=2022-11-28#list-app-installations-accessible-to-the-user-access-token
     /// </remarks>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class Installation : InstallationId
     {
         public Installation() { }
 
-        public Installation(long id, User account, string accessTokenUrl, string repositoriesUrl, string htmlUrl, long appId, long targetId, AccountType targetType, InstallationPermissions permissions, IReadOnlyList<string> events, string singleFileName, string repositorySelection) : base(id)
+        public Installation(long id, User account, string accessTokensUrl, string repositoriesUrl, string htmlUrl, long appId, long targetId, AccountType targetType, InstallationPermissions permissions, IReadOnlyList<string> events, string singleFileName, string repositorySelection, User suspendedBy, DateTimeOffset? suspendedAt) : base(id)
         {
             Account = account;
+            AccessTokensUrl = accessTokensUrl;
+            RepositoriesUrl = repositoriesUrl;
             HtmlUrl = htmlUrl;
             AppId = appId;
             TargetId = targetId;
@@ -27,32 +30,38 @@ namespace Octokit
             Events = events;
             SingleFileName = singleFileName;
             RepositorySelection = repositorySelection;
+            SuspendedBy = suspendedBy;
+            SuspendedAt = suspendedAt;
         }
 
         /// <summary>
         /// The user who owns the Installation.
         /// </summary>
-        public User Account { get; protected set; }
+        public User Account { get; private set; }
+
+        public string AccessTokensUrl { get; private set; }
+
+        public string RepositoriesUrl { get; private set; }
 
         /// <summary>
         /// The URL to view the Installation on GitHub.
         /// </summary>
-        public string HtmlUrl { get; protected set; }
+        public string HtmlUrl { get; private set; }
 
         /// <summary>
         /// The Id of the associated GitHub App.
         /// </summary>
-        public long AppId { get; protected set; }
+        public long AppId { get; private set; }
 
         /// <summary>
         /// The Id of the User/Organization the Installation is installed in
         /// </summary>
-        public long TargetId { get; protected set; }
+        public long TargetId { get; private set; }
 
         /// <summary>
         /// The type of the target (User or Organization)
         /// </summary>
-        public StringEnum<AccountType> TargetType { get; protected set; }
+        public StringEnum<AccountType> TargetType { get; private set; }
 
         /// <summary>
         /// The Permissions granted to the Installation
@@ -67,17 +76,24 @@ namespace Octokit
         /// <summary>
         /// The single file the GitHub App can manage (when Permissions.SingleFile is set to read or write)
         /// </summary>
-        public string SingleFileName { get; protected set; }
+        public string SingleFileName { get; private set; }
 
         /// <summary>
         /// The choice of repositories the installation is on. Can be either "selected" or "all".
         /// </summary>
-        public StringEnum<InstallationRepositorySelection> RepositorySelection { get; protected set; }
+        public StringEnum<InstallationRepositorySelection> RepositorySelection { get; private set; }
 
-        internal new string DebuggerDisplay
-        {
-            get { return string.Format(CultureInfo.InvariantCulture, "Id: {0} AppId: {1}", Id, AppId); }
-        }
+        /// <summary>
+        /// The user who suspended the Installation. Can be null if the Installation is not suspended.
+        /// </summary>
+        public User SuspendedBy { get; private set; }
+
+        /// <summary>
+        /// The date the Installation was suspended. Can be null if the Installation is not suspended.
+        /// </summary>
+        public DateTimeOffset? SuspendedAt { get; private set; }
+
+        internal new string DebuggerDisplay => string.Format(CultureInfo.InvariantCulture, "Id: {0} AppId: {1}", Id, AppId);
     }
 
     public enum InstallationRepositorySelection

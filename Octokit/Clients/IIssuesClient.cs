@@ -18,8 +18,8 @@ namespace Octokit
         IAssigneesClient Assignee { get; }
 
         /// <summary>
-        /// Client for reading various event information associated with issues/pull requests.  
-        /// This is useful both for display on issue/pull request information pages and also to 
+        /// Client for reading various event information associated with issues/pull requests.
+        /// This is useful both for display on issue/pull request information pages and also to
         /// determine who should be notified of comments.
         /// </summary>
         IIssuesEventsClient Events { get; }
@@ -41,6 +41,8 @@ namespace Octokit
 
         IIssueTimelineClient Timeline { get; }
 
+        ILockUnlockClient LockUnlock { get; }
+
         /// <summary>
         /// Gets a single Issue by number.
         /// </summary>
@@ -49,10 +51,10 @@ namespace Octokit
         /// </remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Get",
              Justification = "Method makes a network request")]
-        Task<Issue> Get(string owner, string name, int number);
+        Task<Issue> Get(string owner, string name, long issueNumber);
 
         /// <summary>
         /// Gets a single Issue by number.
@@ -61,10 +63,10 @@ namespace Octokit
         /// http://developer.github.com/v3/issues/#get-a-single-issue
         /// </remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Get",
              Justification = "Method makes a network request")]
-        Task<Issue> Get(long repositoryId, int number);
+        Task<Issue> Get(long repositoryId, long issueNumber);
 
         /// <summary>
         /// Gets all open issues assigned to the authenticated user across all the authenticated user’s visible
@@ -88,7 +90,7 @@ namespace Octokit
         Task<IReadOnlyList<Issue>> GetAllForCurrent(ApiOptions options);
 
         /// <summary>
-        /// Gets all issues across all the authenticated user’s visible repositories including owned repositories, 
+        /// Gets all issues across all the authenticated user’s visible repositories including owned repositories,
         /// member repositories, and organization repositories.
         /// </summary>
         /// <remarks>
@@ -98,7 +100,7 @@ namespace Octokit
         Task<IReadOnlyList<Issue>> GetAllForCurrent(IssueRequest request);
 
         /// <summary>
-        /// Gets all issues across all the authenticated user’s visible repositories including owned repositories, 
+        /// Gets all issues across all the authenticated user’s visible repositories including owned repositories,
         /// member repositories, and organization repositories.
         /// </summary>
         /// <param name="options">Options for changing the API response</param>
@@ -298,10 +300,10 @@ namespace Octokit
         /// <remarks>http://developer.github.com/v3/issues/#edit-an-issue</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         /// <param name="issueUpdate">An <see cref="IssueUpdate"/> instance describing the changes to make to the issue
         /// </param>
-        Task<Issue> Update(string owner, string name, int number, IssueUpdate issueUpdate);
+        Task<Issue> Update(string owner, string name, long issueNumber, IssueUpdate issueUpdate);
 
         /// <summary>
         /// Updates an issue for the specified repository. Any user with pull access to a repository can update an
@@ -309,43 +311,10 @@ namespace Octokit
         /// </summary>
         /// <remarks>http://developer.github.com/v3/issues/#edit-an-issue</remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         /// <param name="issueUpdate">An <see cref="IssueUpdate"/> instance describing the changes to make to the issue
         /// </param>
-        Task<Issue> Update(long repositoryId, int number, IssueUpdate issueUpdate);
+        Task<Issue> Update(long repositoryId, long issueNumber, IssueUpdate issueUpdate);
 
-        /// <summary>
-        /// Locks an issue for the specified repository. Issue owners and users with push access can lock an issue.
-        /// </summary>
-        /// <remarks>https://developer.github.com/v3/issues/#lock-an-issue</remarks>
-        /// <param name="owner">The owner of the repository</param>
-        /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
-        Task Lock(string owner, string name, int number);
-
-        /// <summary>
-        /// Locks an issue for the specified repository. Issue owners and users with push access can lock an issue.
-        /// </summary>
-        /// <remarks>https://developer.github.com/v3/issues/#lock-an-issue</remarks>
-        /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
-        Task Lock(long repositoryId, int number);
-
-        /// <summary>
-        /// Unlocks an issue for the specified repository. Issue owners and users with push access can unlock an issue.
-        /// </summary>
-        /// <remarks>https://developer.github.com/v3/issues/#unlock-an-issue</remarks>
-        /// <param name="owner">The owner of the repository</param>
-        /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
-        Task Unlock(string owner, string name, int number);
-
-        /// <summary>
-        /// Unlocks an issue for the specified repository. Issue owners and users with push access can unlock an issue.
-        /// </summary>
-        /// <remarks>https://developer.github.com/v3/issues/#unlock-an-issue</remarks>
-        /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
-        Task Unlock(long repositoryId, int number);
     }
 }

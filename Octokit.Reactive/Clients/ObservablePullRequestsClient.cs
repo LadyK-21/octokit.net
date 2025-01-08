@@ -30,6 +30,11 @@ namespace Octokit.Reactive
         /// </summary>
         public IObservablePullRequestReviewRequestsClient ReviewRequest { get; private set; }
 
+        /// <summary>
+        /// Client for locking/unlocking a conversation on a pull request
+        /// </summary>
+        public IObservableLockUnlockClient LockUnlock { get; private set; }
+
         public ObservablePullRequestsClient(IGitHubClient client)
         {
             Ensure.ArgumentNotNull(client, nameof(client));
@@ -39,6 +44,7 @@ namespace Octokit.Reactive
             Review = new ObservablePullRequestReviewsClient(client);
             ReviewComment = new ObservablePullRequestReviewCommentsClient(client);
             ReviewRequest = new ObservablePullRequestReviewRequestsClient(client);
+            LockUnlock = new ObservableLockUnlockClient(client);
         }
 
         /// <summary>
@@ -47,12 +53,12 @@ namespace Octokit.Reactive
         /// <remarks>
         /// http://developer.github.com/v3/pulls/#get-a-single-pull-request
         /// </remarks>
-        public IObservable<PullRequest> Get(string owner, string name, int number)
+        public IObservable<PullRequest> Get(string owner, string name, int pullRequestNumber)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
 
-            return _client.Get(owner, name, number).ToObservable();
+            return _client.Get(owner, name, pullRequestNumber).ToObservable();
         }
 
         /// <summary>
@@ -62,10 +68,10 @@ namespace Octokit.Reactive
         /// http://developer.github.com/v3/pulls/#get-a-single-pull-request
         /// </remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The number of the pull request</param>
-        public IObservable<PullRequest> Get(long repositoryId, int number)
+        /// <param name="pullRequestNumber">The number of the pull request</param>
+        public IObservable<PullRequest> Get(long repositoryId, int pullRequestNumber)
         {
-            return _client.Get(repositoryId, number).ToObservable();
+            return _client.Get(repositoryId, pullRequestNumber).ToObservable();
         }
 
         /// <summary>
@@ -111,7 +117,7 @@ namespace Octokit.Reactive
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNull(options, nameof(options));
 
-            return _connection.GetAndFlattenAllPages<PullRequest>(ApiUrls.PullRequests(owner, name), null, AcceptHeaders.DraftPullRequestApiPreview, options);
+            return _connection.GetAndFlattenAllPages<PullRequest>(ApiUrls.PullRequests(owner, name), null, options);
         }
 
         /// <summary>
@@ -126,7 +132,7 @@ namespace Octokit.Reactive
         {
             Ensure.ArgumentNotNull(options, nameof(options));
 
-            return _connection.GetAndFlattenAllPages<PullRequest>(ApiUrls.PullRequests(repositoryId), null, AcceptHeaders.DraftPullRequestApiPreview, options);
+            return _connection.GetAndFlattenAllPages<PullRequest>(ApiUrls.PullRequests(repositoryId), null, options);
         }
 
         /// <summary>
@@ -180,7 +186,7 @@ namespace Octokit.Reactive
             Ensure.ArgumentNotNull(options, nameof(options));
 
             return _connection.GetAndFlattenAllPages<PullRequest>(ApiUrls.PullRequests(owner, name),
-                request.ToParametersDictionary(), AcceptHeaders.DraftPullRequestApiPreview, options);
+                request.ToParametersDictionary(), options);
         }
 
         /// <summary>
@@ -198,7 +204,7 @@ namespace Octokit.Reactive
             Ensure.ArgumentNotNull(options, nameof(options));
 
             return _connection.GetAndFlattenAllPages<PullRequest>(ApiUrls.PullRequests(repositoryId),
-                request.ToParametersDictionary(), AcceptHeaders.DraftPullRequestApiPreview, options);
+                request.ToParametersDictionary(), options);
         }
 
         /// <summary>
@@ -236,16 +242,16 @@ namespace Octokit.Reactive
         /// <remarks>http://developer.github.com/v3/pulls/#update-a-pull-request</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The PullRequest number</param>
+        /// <param name="pullRequestNumber">The PullRequest number</param>
         /// <param name="pullRequestUpdate">An <see cref="PullRequestUpdate"/> instance describing the changes to make to the PullRequest
         /// </param>
-        public IObservable<PullRequest> Update(string owner, string name, int number, PullRequestUpdate pullRequestUpdate)
+        public IObservable<PullRequest> Update(string owner, string name, int pullRequestNumber, PullRequestUpdate pullRequestUpdate)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNull(pullRequestUpdate, nameof(pullRequestUpdate));
 
-            return _client.Update(owner, name, number, pullRequestUpdate).ToObservable();
+            return _client.Update(owner, name, pullRequestNumber, pullRequestUpdate).ToObservable();
         }
 
         /// <summary>
@@ -253,14 +259,14 @@ namespace Octokit.Reactive
         /// </summary>
         /// <remarks>http://developer.github.com/v3/pulls/#update-a-pull-request</remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The PullRequest number</param>
+        /// <param name="pullRequestNumber">The PullRequest number</param>
         /// <param name="pullRequestUpdate">An <see cref="PullRequestUpdate"/> instance describing the changes to make to the PullRequest
         /// </param>
-        public IObservable<PullRequest> Update(long repositoryId, int number, PullRequestUpdate pullRequestUpdate)
+        public IObservable<PullRequest> Update(long repositoryId, int pullRequestNumber, PullRequestUpdate pullRequestUpdate)
         {
             Ensure.ArgumentNotNull(pullRequestUpdate, nameof(pullRequestUpdate));
 
-            return _client.Update(repositoryId, number, pullRequestUpdate).ToObservable();
+            return _client.Update(repositoryId, pullRequestNumber, pullRequestUpdate).ToObservable();
         }
 
         /// <summary>
@@ -269,15 +275,15 @@ namespace Octokit.Reactive
         /// <remarks>http://developer.github.com/v3/pulls/#merge-a-pull-request-merge-buttontrade</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The pull request number</param>
+        /// <param name="pullRequestNumber">The pull request number</param>
         /// <param name="mergePullRequest">A <see cref="MergePullRequest"/> instance describing a pull request merge</param>
-        public IObservable<PullRequestMerge> Merge(string owner, string name, int number, MergePullRequest mergePullRequest)
+        public IObservable<PullRequestMerge> Merge(string owner, string name, int pullRequestNumber, MergePullRequest mergePullRequest)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNull(mergePullRequest, nameof(mergePullRequest));
 
-            return _client.Merge(owner, name, number, mergePullRequest).ToObservable();
+            return _client.Merge(owner, name, pullRequestNumber, mergePullRequest).ToObservable();
         }
 
         /// <summary>
@@ -285,13 +291,13 @@ namespace Octokit.Reactive
         /// </summary>
         /// <remarks>http://developer.github.com/v3/pulls/#merge-a-pull-request-merge-buttontrade</remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The pull request number</param>
+        /// <param name="pullRequestNumber">The pull request number</param>
         /// <param name="mergePullRequest">A <see cref="MergePullRequest"/> instance describing a pull request merge</param>
-        public IObservable<PullRequestMerge> Merge(long repositoryId, int number, MergePullRequest mergePullRequest)
+        public IObservable<PullRequestMerge> Merge(long repositoryId, int pullRequestNumber, MergePullRequest mergePullRequest)
         {
             Ensure.ArgumentNotNull(mergePullRequest, nameof(mergePullRequest));
 
-            return _client.Merge(repositoryId, number, mergePullRequest).ToObservable();
+            return _client.Merge(repositoryId, pullRequestNumber, mergePullRequest).ToObservable();
         }
 
         /// <summary>
@@ -300,13 +306,13 @@ namespace Octokit.Reactive
         /// <remarks>http://developer.github.com/v3/pulls/#get-if-a-pull-request-has-been-merged</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The pull request number</param>
-        public IObservable<bool> Merged(string owner, string name, int number)
+        /// <param name="pullRequestNumber">The pull request number</param>
+        public IObservable<bool> Merged(string owner, string name, int pullRequestNumber)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
 
-            return _client.Merged(owner, name, number).ToObservable();
+            return _client.Merged(owner, name, pullRequestNumber).ToObservable();
         }
 
         /// <summary>
@@ -314,10 +320,10 @@ namespace Octokit.Reactive
         /// </summary>
         /// <remarks>http://developer.github.com/v3/pulls/#get-if-a-pull-request-has-been-merged</remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The pull request number</param>
-        public IObservable<bool> Merged(long repositoryId, int number)
+        /// <param name="pullRequestNumber">The pull request number</param>
+        public IObservable<bool> Merged(long repositoryId, int pullRequestNumber)
         {
-            return _client.Merged(repositoryId, number).ToObservable();
+            return _client.Merged(repositoryId, pullRequestNumber).ToObservable();
         }
 
         /// <summary>
@@ -326,13 +332,13 @@ namespace Octokit.Reactive
         /// <remarks>http://developer.github.com/v3/pulls/#list-commits-on-a-pull-request</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The pull request number</param>
-        public IObservable<PullRequestCommit> Commits(string owner, string name, int number)
+        /// <param name="pullRequestNumber">The pull request number</param>
+        public IObservable<PullRequestCommit> Commits(string owner, string name, int pullRequestNumber)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
 
-            return _connection.GetAndFlattenAllPages<PullRequestCommit>(ApiUrls.PullRequestCommits(owner, name, number));
+            return _connection.GetAndFlattenAllPages<PullRequestCommit>(ApiUrls.PullRequestCommits(owner, name, pullRequestNumber));
         }
 
         /// <summary>
@@ -340,10 +346,10 @@ namespace Octokit.Reactive
         /// </summary>
         /// <remarks>http://developer.github.com/v3/pulls/#list-commits-on-a-pull-request</remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The pull request number</param>
-        public IObservable<PullRequestCommit> Commits(long repositoryId, int number)
+        /// <param name="pullRequestNumber">The pull request number</param>
+        public IObservable<PullRequestCommit> Commits(long repositoryId, int pullRequestNumber)
         {
-            return _connection.GetAndFlattenAllPages<PullRequestCommit>(ApiUrls.PullRequestCommits(repositoryId, number));
+            return _connection.GetAndFlattenAllPages<PullRequestCommit>(ApiUrls.PullRequestCommits(repositoryId, pullRequestNumber));
         }
 
         /// <summary>
@@ -352,13 +358,26 @@ namespace Octokit.Reactive
         /// <remarks>https://developer.github.com/v3/pulls/#list-pull-requests-files</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The pull request number</param>
-        public IObservable<PullRequestFile> Files(string owner, string name, int number)
+        /// <param name="pullRequestNumber">The pull request number</param>
+        /// <param name="options">Options for changing the API response</param>
+        public IObservable<PullRequestFile> Files(string owner, string name, int pullRequestNumber, ApiOptions options)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
 
-            return _connection.GetAndFlattenAllPages<PullRequestFile>(ApiUrls.PullRequestFiles(owner, name, number));
+            return _connection.GetAndFlattenAllPages<PullRequestFile>(ApiUrls.PullRequestFiles(owner, name, pullRequestNumber), options);
+        }
+
+        /// <summary>
+        /// Get the list of files on a pull request.
+        /// </summary>
+        /// <remarks>https://developer.github.com/v3/pulls/#list-pull-requests-files</remarks>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="pullRequestNumber">The pull request number</param>
+        public IObservable<PullRequestFile> Files(string owner, string name, int pullRequestNumber)
+        {
+            return Files(owner, name, pullRequestNumber, ApiOptions.None);
         }
 
         /// <summary>
@@ -366,10 +385,22 @@ namespace Octokit.Reactive
         /// </summary>
         /// <remarks>https://developer.github.com/v3/pulls/#list-pull-requests-files</remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The pull request number</param>
-        public IObservable<PullRequestFile> Files(long repositoryId, int number)
+        /// <param name="pullRequestNumber">The pull request number</param>
+        /// <param name="options">Options for changing the API response</param>
+        public IObservable<PullRequestFile> Files(long repositoryId, int pullRequestNumber, ApiOptions options)
         {
-            return _connection.GetAndFlattenAllPages<PullRequestFile>(ApiUrls.PullRequestFiles(repositoryId, number));
+            return _connection.GetAndFlattenAllPages<PullRequestFile>(ApiUrls.PullRequestFiles(repositoryId, pullRequestNumber), options);
+        }
+
+        /// <summary>
+        /// Get the list of files on a pull request.
+        /// </summary>
+        /// <remarks>https://developer.github.com/v3/pulls/#list-pull-requests-files</remarks>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="pullRequestNumber">The pull request number</param>
+        public IObservable<PullRequestFile> Files(long repositoryId, int pullRequestNumber)
+        {
+            return Files(repositoryId, pullRequestNumber, ApiOptions.None);
         }
     }
 }

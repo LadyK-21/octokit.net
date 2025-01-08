@@ -58,7 +58,7 @@ namespace Octokit
 
             var endpoint = ApiUrls.Assignees(owner, name);
 
-            return ApiConnection.GetAll<User>(endpoint, null, AcceptHeaders.StableVersion, options);
+            return ApiConnection.GetAll<User>(endpoint, null, options);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Octokit
 
             var endpoint = ApiUrls.Assignees(repositoryId);
 
-            return ApiConnection.GetAll<User>(endpoint, null, AcceptHeaders.StableVersion, options);
+            return ApiConnection.GetAll<User>(endpoint, null, options);
         }
 
         /// <summary>
@@ -105,17 +105,17 @@ namespace Octokit
         /// </summary>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         /// <param name="assignees">List of names of assignees to add</param>
         /// <returns></returns>
         [ManualRoute("POST", "/repos/{owner}/{repo}/issues/{issue_number}/assignees")]
-        public Task<Issue> AddAssignees(string owner, string name, int number, AssigneesUpdate assignees)
+        public Task<Issue> AddAssignees(string owner, string name, long issueNumber, AssigneesUpdate assignees)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNull(assignees, nameof(assignees));
 
-            return ApiConnection.Post<Issue>(ApiUrls.IssueAssignees(owner, name, number), assignees);
+            return ApiConnection.Post<Issue>(ApiUrls.IssueAssignees(owner, name, issueNumber), assignees);
         }
 
         /// <summary>
@@ -123,17 +123,17 @@ namespace Octokit
         /// </summary>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         /// <param name="assignees">List of assignees to remove</param>
         /// <returns></returns>
         [ManualRoute("DELETE", "/repos/{owner}/{repo}/issues/{issue_number}/assignees")]
-        public Task<Issue> RemoveAssignees(string owner, string name, int number, AssigneesUpdate assignees)
+        public Task<Issue> RemoveAssignees(string owner, string name, long issueNumber, AssigneesUpdate assignees)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNull(assignees, nameof(assignees));
 
-            return ApiConnection.Delete<Issue>(ApiUrls.IssueAssignees(owner, name, number), assignees);
+            return ApiConnection.Delete<Issue>(ApiUrls.IssueAssignees(owner, name, issueNumber), assignees);
         }
 
         /// <summary>

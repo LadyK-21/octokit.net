@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using NSubstitute;
 using Xunit;
 using System.Collections.Generic;
+using System.Net;
+using Octokit.Internal;
 
 namespace Octokit.Tests.Clients
 {
@@ -145,7 +147,7 @@ namespace Octokit.Tests.Clients
                 var contents = await contentsClient.GetAllContents("fake", "repo", "readme.md");
 
                 connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/readme.md"));
-                Assert.Equal(1, contents.Count);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -160,7 +162,7 @@ namespace Octokit.Tests.Clients
                 var contents = await contentsClient.GetAllContents(1, "readme.md");
 
                 connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/readme.md"));
-                Assert.Equal(1, contents.Count);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -175,7 +177,7 @@ namespace Octokit.Tests.Clients
                 var contents = await contentsClient.GetAllContents("fake", "repo");
 
                 connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/"));
-                Assert.Equal(1, contents.Count);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -190,7 +192,7 @@ namespace Octokit.Tests.Clients
                 var contents = await contentsClient.GetAllContents(1);
 
                 connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/"));
-                Assert.Equal(1, contents.Count);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -261,10 +263,10 @@ namespace Octokit.Tests.Clients
                 connection.GetAll<RepositoryContent>(Args.Uri).Returns(Task.FromResult(result.AsReadOnly() as IReadOnlyList<RepositoryContent>));
                 var contentsClient = new RepositoryContentsClient(connection);
 
-                var contents = await contentsClient.GetAllContentsByRef("fake", "repo", "readme.md", "master");
+                var contents = await contentsClient.GetAllContentsByRef("fake", "repo", "readme.md", GitHubConstants.DefaultBranchName);
 
-                connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/readme.md?ref=master"));
-                Assert.Equal(1, contents.Count);
+                connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == $"repos/fake/repo/contents/readme.md?ref={GitHubConstants.DefaultBranchName}"));
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -276,10 +278,10 @@ namespace Octokit.Tests.Clients
                 connection.GetAll<RepositoryContent>(Args.Uri).Returns(Task.FromResult(result.AsReadOnly() as IReadOnlyList<RepositoryContent>));
                 var contentsClient = new RepositoryContentsClient(connection);
 
-                var contents = await contentsClient.GetAllContentsByRef(1, "readme.md", "master");
+                var contents = await contentsClient.GetAllContentsByRef(1, "readme.md", GitHubConstants.DefaultBranchName);
 
-                connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/readme.md?ref=master"));
-                Assert.Equal(1, contents.Count);
+                connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == $"repositories/1/contents/readme.md?ref={GitHubConstants.DefaultBranchName}"));
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -291,10 +293,10 @@ namespace Octokit.Tests.Clients
                 connection.GetAll<RepositoryContent>(Args.Uri).Returns(Task.FromResult(result.AsReadOnly() as IReadOnlyList<RepositoryContent>));
                 var contentsClient = new RepositoryContentsClient(connection);
 
-                var contents = await contentsClient.GetAllContentsByRef("fake", "repo", "master");
+                var contents = await contentsClient.GetAllContentsByRef("fake", "repo", GitHubConstants.DefaultBranchName);
 
-                connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/?ref=master"));
-                Assert.Equal(1, contents.Count);
+                connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == $"repos/fake/repo/contents/?ref={GitHubConstants.DefaultBranchName}"));
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -306,10 +308,10 @@ namespace Octokit.Tests.Clients
                 connection.GetAll<RepositoryContent>(Args.Uri).Returns(Task.FromResult(result.AsReadOnly() as IReadOnlyList<RepositoryContent>));
                 var contentsClient = new RepositoryContentsClient(connection);
 
-                var contents = await contentsClient.GetAllContentsByRef(1, "master");
+                var contents = await contentsClient.GetAllContentsByRef(1, GitHubConstants.DefaultBranchName);
 
-                connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/?ref=master"));
-                Assert.Equal(1, contents.Count);
+                connection.Received().GetAll<RepositoryContent>(Arg.Is<Uri>(u => u.ToString() == $"repositories/1/contents/?ref={GitHubConstants.DefaultBranchName}"));
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -748,7 +750,7 @@ namespace Octokit.Tests.Clients
                 const string expectedUri = "repos/org/repo/tarball/";
                 var expectedTimeSpan = TimeSpan.FromMinutes(60);
 
-                connection.Connection.Received().Get<byte[]>(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
+                connection.Connection.Received().GetRaw(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), null, Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
             }
 
             [Fact]
@@ -762,7 +764,7 @@ namespace Octokit.Tests.Clients
                 const string expectedUri = "repositories/1/tarball/";
                 var expectedTimeSpan = TimeSpan.FromMinutes(60);
 
-                connection.Connection.Received().Get<byte[]>(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
+                connection.Connection.Received().GetRaw(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), null, Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
             }
 
             [Fact]
@@ -776,7 +778,7 @@ namespace Octokit.Tests.Clients
                 const string expectedUri = "repos/org/repo/zipball/";
                 var expectedTimeSpan = TimeSpan.FromMinutes(60);
 
-                connection.Connection.Received().Get<byte[]>(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
+                connection.Connection.Received().GetRaw(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), null, Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
             }
 
             [Fact]
@@ -790,7 +792,7 @@ namespace Octokit.Tests.Clients
                 const string expectedUri = "repositories/1/zipball/";
                 var expectedTimeSpan = TimeSpan.FromMinutes(60);
 
-                connection.Connection.Received().Get<byte[]>(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
+                connection.Connection.Received().GetRaw(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), null, Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
             }
 
             [Fact]
@@ -804,7 +806,7 @@ namespace Octokit.Tests.Clients
                 const string expectedUri = "repos/org/repo/zipball/ref";
                 var expectedTimeSpan = TimeSpan.FromMinutes(60);
 
-                connection.Connection.Received().Get<byte[]>(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
+                connection.Connection.Received().GetRaw(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), null, Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
             }
 
             [Fact]
@@ -818,7 +820,7 @@ namespace Octokit.Tests.Clients
                 const string expectedUri = "repositories/1/zipball/ref";
                 var expectedTimeSpan = TimeSpan.FromMinutes(60);
 
-                connection.Connection.Received().Get<byte[]>(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
+                connection.Connection.Received().GetRaw(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), null, Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
             }
 
             [Fact]
@@ -832,7 +834,7 @@ namespace Octokit.Tests.Clients
                 const string expectedUri = "repos/org/repo/zipball/ref";
                 var expectedTimeSpan = TimeSpan.FromMinutes(60);
 
-                connection.Connection.Received().Get<byte[]>(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
+                connection.Connection.Received().GetRaw(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), null, Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
             }
 
             [Fact]
@@ -846,7 +848,7 @@ namespace Octokit.Tests.Clients
                 const string expectedUri = "repositories/1/zipball/ref";
                 var expectedTimeSpan = TimeSpan.FromMinutes(60);
 
-                connection.Connection.Received().Get<byte[]>(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
+                connection.Connection.Received().GetRaw(Arg.Is<Uri>(uri => uri.ToString() == expectedUri), null, Arg.Is<TimeSpan>(span => span == expectedTimeSpan));
             }
 
             [Fact]
@@ -881,6 +883,27 @@ namespace Octokit.Tests.Clients
                 await Assert.ThrowsAsync<ArgumentException>(() => client.GetArchive("org", "repo", ArchiveFormat.Tarball, "ref", TimeSpan.Zero));
 
                 await Assert.ThrowsAsync<ArgumentException>(() => client.GetArchive(1, ArchiveFormat.Tarball, "ref", TimeSpan.Zero));
+            }
+
+            [Fact]
+            public async Task ReturnsExpectedContent()
+            {
+                var headers = new Dictionary<string, string>();
+                var response = TestSetup.CreateResponse(HttpStatusCode.OK, new byte[] { 1, 2, 3, 4 }, headers);
+                var responseTask = Task.FromResult<IApiResponse<byte[]>>(new ApiResponse<byte[]>(response));
+
+                var connection = Substitute.For<IConnection>();
+                connection.GetRaw(Arg.Is<Uri>(u => u.ToString() == "repos/org/repo/tarball/"), null, TimeSpan.FromMinutes(60))
+                    .Returns(responseTask);
+
+                var apiConnection = Substitute.For<IApiConnection>();
+                apiConnection.Connection.Returns(connection);
+
+                var client = new RepositoryContentsClient(apiConnection);
+
+                var actual = await client.GetArchive("org", "repo");
+
+                Assert.Equal(new byte[] { 1, 2, 3, 4 }, actual);
             }
         }
     }

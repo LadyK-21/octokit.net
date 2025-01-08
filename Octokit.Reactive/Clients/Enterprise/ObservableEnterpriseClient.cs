@@ -13,12 +13,14 @@
             Ensure.ArgumentNotNull(client, nameof(client));
 
             AdminStats = new ObservableEnterpriseAdminStatsClient(client);
+            AuditLog = new ObservableEnterpriseAuditLogClient(client);
             Ldap = new ObservableEnterpriseLdapClient(client);
             License = new ObservableEnterpriseLicenseClient(client);
             ManagementConsole = new ObservableEnterpriseManagementConsoleClient(client);
             Organization = new ObservableEnterpriseOrganizationClient(client);
             SearchIndexing = new ObservableEnterpriseSearchIndexingClient(client);
             PreReceiveEnvironment = new ObservableEnterprisePreReceiveEnvironmentsClient(client);
+            PreReceiveHook = new ObservableEnterprisePreReceiveHooksClient(client);
         }
 
         /// <summary>
@@ -28,6 +30,14 @@
         /// See the <a href="http://developer.github.com/v3/enterprise/admin_stats/">Enterprise Admin Stats API documentation</a> for more information.
         /// </remarks>
         public IObservableEnterpriseAdminStatsClient AdminStats { get; private set; }
+
+        /// <summary>
+        /// A client for GitHub's Enterprise Audit Log API
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/en/enterprise-cloud@latest/rest/enterprise-admin/audit-log">Enterprise Audit Log API documentation</a> for more information.
+        /// </remarks>
+        public IObservableEnterpriseAuditLogClient AuditLog { get; }
 
         /// <summary>
         /// A client for GitHub's Enterprise LDAP API
@@ -76,5 +86,13 @@
         /// See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/">Enterprise Pre-receive Environments API documentation</a> for more information.
         ///</remarks>
         public IObservableEnterprisePreReceiveEnvironmentsClient PreReceiveEnvironment { get; private set; }
+
+        /// <summary>
+        /// A client for GitHub's Enterprise Pre-receive Hooks API
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/enterprise-server/rest/reference/enterprise-admin#pre-receive-hooks">Enterprise Pre-receive Hooks API documentation</a> for more information.
+        ///</remarks>
+        public IObservableEnterprisePreReceiveHooksClient PreReceiveHook { get; private set; }
     }
 }

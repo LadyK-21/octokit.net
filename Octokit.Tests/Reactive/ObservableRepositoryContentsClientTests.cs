@@ -173,13 +173,13 @@ namespace Octokit.Tests.Reactive
                 var contentsClient = new ObservableRepositoryContentsClient(gitHubClient);
                 IApiResponse<List<RepositoryContent>> response = new ApiResponse<List<RepositoryContent>>(CreateResponse(HttpStatusCode.OK), result);
 
-                connection.Get<List<RepositoryContent>>(Args.Uri, null, null)
+                connection.Get<List<RepositoryContent>>(Args.Uri, null)
                     .Returns(Task.FromResult(response));
 
                 var contents = await contentsClient.GetAllContents("fake", "repo").ToList();
 
-                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/"), null, null);
-                Assert.Equal(1, contents.Count);
+                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/"), null);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -192,13 +192,13 @@ namespace Octokit.Tests.Reactive
                 var contentsClient = new ObservableRepositoryContentsClient(gitHubClient);
                 IApiResponse<List<RepositoryContent>> response = new ApiResponse<List<RepositoryContent>>(CreateResponse(HttpStatusCode.OK), result);
 
-                connection.Get<List<RepositoryContent>>(Args.Uri, null, null)
+                connection.Get<List<RepositoryContent>>(Args.Uri, null)
                     .Returns(Task.FromResult(response));
 
                 var contents = await contentsClient.GetAllContents(1).ToList();
 
-                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/"), null, null);
-                Assert.Equal(1, contents.Count);
+                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/"), null);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -211,13 +211,13 @@ namespace Octokit.Tests.Reactive
                 var contentsClient = new ObservableRepositoryContentsClient(gitHubClient);
                 IApiResponse<List<RepositoryContent>> response = new ApiResponse<List<RepositoryContent>>(CreateResponse(HttpStatusCode.OK), result);
 
-                connection.Get<List<RepositoryContent>>(Args.Uri, null, null)
+                connection.Get<List<RepositoryContent>>(Args.Uri, null)
                     .Returns(Task.FromResult(response));
 
                 var contents = await contentsClient.GetAllContents("fake", "repo").ToList();
 
-                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/"), null, null);
-                Assert.Equal(1, contents.Count);
+                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/"), null);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -229,13 +229,13 @@ namespace Octokit.Tests.Reactive
                 var gitHubClient = new GitHubClient(connection);
                 var contentsClient = new ObservableRepositoryContentsClient(gitHubClient);
                 IApiResponse<List<RepositoryContent>> response = new ApiResponse<List<RepositoryContent>>(CreateResponse(HttpStatusCode.OK), result);
-                connection.Get<List<RepositoryContent>>(Args.Uri, null, null)
+                connection.Get<List<RepositoryContent>>(Args.Uri, null)
                     .Returns(Task.FromResult(response));
 
                 var contents = await contentsClient.GetAllContents(1).ToList();
 
-                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/"), null, null);
-                Assert.Equal(1, contents.Count);
+                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/"), null);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -309,13 +309,13 @@ namespace Octokit.Tests.Reactive
                 var contentsClient = new ObservableRepositoryContentsClient(gitHubClient);
 
                 IApiResponse<List<RepositoryContent>> response = new ApiResponse<List<RepositoryContent>>(CreateResponse(HttpStatusCode.OK), result);
-                connection.Get<List<RepositoryContent>>(Args.Uri, null, null)
+                connection.Get<List<RepositoryContent>>(Args.Uri, null)
                     .Returns(Task.FromResult(response));
 
-                var contents = await contentsClient.GetAllContentsByRef("fake", "repo", "master", "readme.md").ToList();
+                var contents = await contentsClient.GetAllContentsByRef("fake", "repo", GitHubConstants.DefaultBranchName, "readme.md").ToList();
 
-                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/readme.md?ref=master"), null, null);
-                Assert.Equal(1, contents.Count);
+                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == $"repos/fake/repo/contents/readme.md?ref={GitHubConstants.DefaultBranchName}"), null);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -327,13 +327,13 @@ namespace Octokit.Tests.Reactive
                 var gitHubClient = new GitHubClient(connection);
                 var contentsClient = new ObservableRepositoryContentsClient(gitHubClient);
                 IApiResponse<List<RepositoryContent>> response = new ApiResponse<List<RepositoryContent>>(CreateResponse(HttpStatusCode.OK), result);
-                connection.Get<List<RepositoryContent>>(Args.Uri, null, null)
+                connection.Get<List<RepositoryContent>>(Args.Uri, null)
                     .Returns(Task.FromResult(response));
 
-                var contents = await contentsClient.GetAllContentsByRef(1, "master", "readme.md").ToList();
+                var contents = await contentsClient.GetAllContentsByRef(1, GitHubConstants.DefaultBranchName, "readme.md").ToList();
 
-                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/readme.md?ref=master"), null, null);
-                Assert.Equal(1, contents.Count);
+                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == $"repositories/1/contents/readme.md?ref={GitHubConstants.DefaultBranchName}"), null);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -345,13 +345,13 @@ namespace Octokit.Tests.Reactive
                 var gitHubClient = new GitHubClient(connection);
                 var contentsClient = new ObservableRepositoryContentsClient(gitHubClient);
                 IApiResponse<List<RepositoryContent>> response = new ApiResponse<List<RepositoryContent>>(CreateResponse(HttpStatusCode.OK), result);
-                connection.Get<List<RepositoryContent>>(Args.Uri, null, null)
+                connection.Get<List<RepositoryContent>>(Args.Uri, null)
                     .Returns(Task.FromResult(response));
 
-                var contents = await contentsClient.GetAllContentsByRef("fake", "repo", "master").ToList();
+                var contents = await contentsClient.GetAllContentsByRef("fake", "repo", GitHubConstants.DefaultBranchName).ToList();
 
-                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/contents/?ref=master"), null, null);
-                Assert.Equal(1, contents.Count);
+                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == $"repos/fake/repo/contents/?ref={GitHubConstants.DefaultBranchName}"), null);
+                Assert.Single(contents);
             }
 
             [Fact]
@@ -363,13 +363,13 @@ namespace Octokit.Tests.Reactive
                 var gitHubClient = new GitHubClient(connection);
                 var contentsClient = new ObservableRepositoryContentsClient(gitHubClient);
                 IApiResponse<List<RepositoryContent>> response = new ApiResponse<List<RepositoryContent>>(CreateResponse(HttpStatusCode.OK), result);
-                connection.Get<List<RepositoryContent>>(Args.Uri, null, null)
+                connection.Get<List<RepositoryContent>>(Args.Uri, null)
                     .Returns(Task.FromResult(response));
 
-                var contents = await contentsClient.GetAllContentsByRef(1, "master").ToList();
+                var contents = await contentsClient.GetAllContentsByRef(1, GitHubConstants.DefaultBranchName).ToList();
 
-                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/contents/?ref=master"), null, null);
-                Assert.Equal(1, contents.Count);
+                connection.Received().Get<List<RepositoryContent>>(Arg.Is<Uri>(u => u.ToString() == $"repositories/1/contents/?ref={GitHubConstants.DefaultBranchName}"), null);
+                Assert.Single(contents);
             }
 
             [Fact]

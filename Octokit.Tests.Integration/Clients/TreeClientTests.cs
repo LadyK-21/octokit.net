@@ -17,7 +17,7 @@ public class TreeClientTests : IDisposable
 
         _fixture = _github.Git.Tree;
 
-        _context = _github.CreateRepositoryContext("public-repo").Result;
+        _context = _github.CreateRepositoryContextWithAutoInit("public-repo").Result;
     }
 
     [IntegrationTest]
@@ -73,7 +73,7 @@ public class TreeClientTests : IDisposable
     [IntegrationTest]
     public async Task CanGetATree()
     {
-        var result = await _fixture.Get("octokit", "octokit.net", "master");
+        var result = await _fixture.Get("octokit", "octokit.net", "main");
 
         Assert.NotNull(result);
         Assert.NotEmpty(result.Tree);
@@ -82,7 +82,7 @@ public class TreeClientTests : IDisposable
     [IntegrationTest]
     public async Task CanGetATreeWithRepositoryId()
     {
-        var result = await _fixture.Get(1, "master");
+        var result = await _fixture.Get(1, "main");
 
         Assert.NotNull(result);
         Assert.NotEmpty(result.Tree);
@@ -113,7 +113,7 @@ public class TreeClientTests : IDisposable
         var result = await _fixture.Get(_context.RepositoryOwner, _context.RepositoryName, tree.Sha);
 
         Assert.NotNull(result);
-        Assert.Equal(1, result.Tree.Count);
+        Assert.Single(result.Tree);
     }
 
     [IntegrationTest]
@@ -141,7 +141,7 @@ public class TreeClientTests : IDisposable
         var result = await _fixture.Get(_context.Repository.Id, tree.Sha);
 
         Assert.NotNull(result);
-        Assert.Equal(1, result.Tree.Count);
+        Assert.Single(result.Tree);
     }
 
     public void Dispose()

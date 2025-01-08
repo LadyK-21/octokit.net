@@ -11,9 +11,9 @@ using Xunit;
 public class MigrationsClientTests : IDisposable
 {
     private readonly IGitHubClient _gitHub;
-    private List<RepositoryContext> _repos;
+    private readonly List<RepositoryContext> _repos;
     private Migration _migrationContext;
-    private string _orgName;
+    private readonly string _orgName;
     private bool isExported = false;
 
     public MigrationsClientTests()
@@ -28,17 +28,17 @@ public class MigrationsClientTests : IDisposable
 
     private async Task CreateTheWorld()
     {
-        _repos.Add(await _gitHub.CreateRepositoryContext(_orgName, new NewRepository(Helper.MakeNameWithTimestamp("migrationtest-repo1"))
+        _repos.Add(await _gitHub.CreateOrganizationRepositoryContext(_orgName, new NewRepository(Helper.MakeNameWithTimestamp("migrationtest-repo1"))
         {
             GitignoreTemplate = "VisualStudio",
             LicenseTemplate = "mit"
         }));
-        _repos.Add(await _gitHub.CreateRepositoryContext(_orgName, new NewRepository(Helper.MakeNameWithTimestamp("migrationtest-repo2"))
+        _repos.Add(await _gitHub.CreateOrganizationRepositoryContext(_orgName, new NewRepository(Helper.MakeNameWithTimestamp("migrationtest-repo2"))
         {
             GitignoreTemplate = "VisualStudio",
             LicenseTemplate = "mit"
         }));
-        _repos.Add(await _gitHub.CreateRepositoryContext(_orgName, new NewRepository(Helper.MakeNameWithTimestamp("migrationtest-repo3"))
+        _repos.Add(await _gitHub.CreateOrganizationRepositoryContext(_orgName, new NewRepository(Helper.MakeNameWithTimestamp("migrationtest-repo3"))
         {
             GitignoreTemplate = "VisualStudio",
             LicenseTemplate = "mit"
@@ -64,7 +64,7 @@ public class MigrationsClientTests : IDisposable
         var migrations = await _gitHub.Migration.Migrations.GetAll(_orgName);
 
         Assert.NotNull(migrations);
-        Assert.NotEqual(0, migrations.Count);
+        Assert.NotEmpty(migrations);
     }
 
     [IntegrationTest]
@@ -78,7 +78,7 @@ public class MigrationsClientTests : IDisposable
 
         var migrations = await _gitHub.Migration.Migrations.GetAll(_orgName, options);
 
-        Assert.Equal(1, migrations.Count);
+        Assert.Single(migrations);
     }
 
     [IntegrationTest]
@@ -93,7 +93,7 @@ public class MigrationsClientTests : IDisposable
 
         var migrations = await _gitHub.Migration.Migrations.GetAll(_orgName, options);
 
-        Assert.Equal(1, migrations.Count);
+        Assert.Single(migrations);
     }
 
     [IntegrationTest]
@@ -116,8 +116,8 @@ public class MigrationsClientTests : IDisposable
         };
         var secondPage = await _gitHub.Migration.Migrations.GetAll(_orgName, skipStartOptions);
 
-        Assert.Equal(1, firstPage.Count);
-        Assert.Equal(1, secondPage.Count);
+        Assert.Single(firstPage);
+        Assert.Single(secondPage);
         Assert.NotEqual(firstPage[0].Id, secondPage[0].Id);
         Assert.NotEqual(firstPage[0].Repositories, secondPage[0].Repositories);
     }

@@ -9,7 +9,7 @@ namespace Octokit.Tests.Integration.Clients
     {
         public class TheGetMethod
         {
-            IGitHubClient _github;
+            readonly IGitHubClient _github;
 
             public TheGetMethod()
             {
@@ -23,6 +23,7 @@ namespace Octokit.Tests.Integration.Clients
                 var result = await _github.GitHubApps.Get(Helper.GitHubAppSlug);
 
                 Assert.Equal(Helper.GitHubAppId, result.Id);
+                Assert.Equal(Helper.GitHubAppSlug, result.Slug);
                 Assert.False(string.IsNullOrEmpty(result.Name));
                 Assert.NotNull(result.Owner);
             }
@@ -30,7 +31,7 @@ namespace Octokit.Tests.Integration.Clients
 
         public class TheGetCurrentMethod
         {
-            IGitHubClient _github;
+            readonly IGitHubClient _github;
 
             public TheGetCurrentMethod()
             {
@@ -44,6 +45,7 @@ namespace Octokit.Tests.Integration.Clients
                 var result = await _github.GitHubApps.GetCurrent();
 
                 Assert.Equal(Helper.GitHubAppId, result.Id);
+                Assert.Equal(Helper.GitHubAppSlug, result.Slug);
                 Assert.False(string.IsNullOrEmpty(result.Name));
                 Assert.NotNull(result.Owner);
             }
@@ -51,7 +53,7 @@ namespace Octokit.Tests.Integration.Clients
 
         public class TheGetAllInstallationsForCurrentMethod
         {
-            IGitHubClient _github;
+            readonly IGitHubClient _github;
 
             public TheGetAllInstallationsForCurrentMethod()
             {
@@ -69,16 +71,18 @@ namespace Octokit.Tests.Integration.Clients
                     Assert.Equal(Helper.GitHubAppId, installation.AppId);
                     Assert.NotNull(installation.Account);
                     Assert.NotNull(installation.Permissions);
-                    Assert.Equal(InstallationPermissionLevel.Read, installation.Permissions.Metadata);
+                    Assert.Equal(InstallationReadWritePermissionLevel.Read, installation.Permissions.Metadata);
                     Assert.False(string.IsNullOrEmpty(installation.HtmlUrl));
                     Assert.NotEqual(0, installation.TargetId);
+                    Assert.Null(installation.SuspendedBy);
+                    Assert.Null(installation.SuspendedAt);
                 }
             }
         }
 
         public class TheGetInstallationForCurrentMethod
         {
-            IGitHubClient _github;
+            readonly IGitHubClient _github;
 
             public TheGetInstallationForCurrentMethod()
             {
@@ -99,7 +103,7 @@ namespace Octokit.Tests.Integration.Clients
                 Assert.Equal(Helper.GitHubAppId, result.AppId);
                 Assert.NotNull(result.Account);
                 Assert.NotNull(result.Permissions);
-                Assert.Equal(InstallationPermissionLevel.Read, result.Permissions.Metadata);
+                Assert.Equal(InstallationReadWritePermissionLevel.Read, result.Permissions.Metadata);
                 Assert.False(string.IsNullOrEmpty(result.HtmlUrl));
                 Assert.NotEqual(0, result.TargetId);
             }
@@ -107,7 +111,7 @@ namespace Octokit.Tests.Integration.Clients
 
         public class TheGetAllInstallationsForCurrentUserMethod
         {
-            IGitHubClient _github;
+            readonly IGitHubClient _github;
 
             public TheGetAllInstallationsForCurrentUserMethod()
             {
@@ -128,7 +132,7 @@ namespace Octokit.Tests.Integration.Clients
 
         public class TheCreateInstallationTokenMethod
         {
-            IGitHubClient _github;
+            readonly IGitHubClient _github;
 
             public TheCreateInstallationTokenMethod()
             {
@@ -152,7 +156,7 @@ namespace Octokit.Tests.Integration.Clients
 
         public class TheGetOrganizationInstallationForCurrentMethod
         {
-            IGitHubClient _github;
+            readonly IGitHubClient _github;
 
             public TheGetOrganizationInstallationForCurrentMethod()
             {
@@ -171,8 +175,8 @@ namespace Octokit.Tests.Integration.Clients
 
         public class TheGetRepositoryInstallationForCurrentMethod
         {
-            IGitHubClient _github;
-            IGitHubClient _githubAppInstallation;
+            readonly IGitHubClient _github;
+            readonly IGitHubClient _githubAppInstallation;
 
             public TheGetRepositoryInstallationForCurrentMethod()
             {
@@ -212,7 +216,7 @@ namespace Octokit.Tests.Integration.Clients
 
         public class TheGetUserInstallationForCurrentMethod
         {
-            IGitHubClient _github;
+            readonly IGitHubClient _github;
 
             public TheGetUserInstallationForCurrentMethod()
             {

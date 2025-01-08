@@ -23,8 +23,8 @@ namespace Octokit.Reactive
         IObservableMilestonesClient Milestone { get; }
 
         /// <summary>
-        /// Client for reading various event information associated with issues/pull requests.  
-        /// This is useful both for display on issue/pull request information pages and also to 
+        /// Client for reading various event information associated with issues/pull requests.
+        /// This is useful both for display on issue/pull request information pages and also to
         /// determine who should be notified of comments.
         /// </summary>
         IObservableIssuesEventsClient Events { get; }
@@ -45,6 +45,11 @@ namespace Octokit.Reactive
         IObservableIssueTimelineClient Timeline { get; }
 
         /// <summary>
+        /// Client for locking/unlocking conversation on an issue
+        /// </summary>
+        IObservableLockUnlockClient LockUnlock { get; }
+
+        /// <summary>
         /// Gets a single Issue by number.
         /// </summary>
         /// <remarks>
@@ -52,10 +57,10 @@ namespace Octokit.Reactive
         /// </remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Get",
              Justification = "Method makes a network request")]
-        IObservable<Issue> Get(string owner, string name, int number);
+        IObservable<Issue> Get(string owner, string name, long issueNumber);
 
         /// <summary>
         /// Gets a single Issue by number.
@@ -64,10 +69,10 @@ namespace Octokit.Reactive
         /// http://developer.github.com/v3/issues/#get-a-single-issue
         /// </remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Get",
              Justification = "Method makes a network request")]
-        IObservable<Issue> Get(long repositoryId, int number);
+        IObservable<Issue> Get(long repositoryId, long issueNumber);
 
         /// <summary>
         /// Gets all open issues assigned to the authenticated user across all the authenticated user’s visible
@@ -91,7 +96,7 @@ namespace Octokit.Reactive
         IObservable<Issue> GetAllForCurrent(ApiOptions options);
 
         /// <summary>
-        /// Gets all issues across all the authenticated user’s visible repositories including owned repositories, 
+        /// Gets all issues across all the authenticated user’s visible repositories including owned repositories,
         /// member repositories, and organization repositories.
         /// </summary>
         /// <remarks>
@@ -101,7 +106,7 @@ namespace Octokit.Reactive
         IObservable<Issue> GetAllForCurrent(IssueRequest request);
 
         /// <summary>
-        /// Gets all issues across all the authenticated user’s visible repositories including owned repositories, 
+        /// Gets all issues across all the authenticated user’s visible repositories including owned repositories,
         /// member repositories, and organization repositories.
         /// </summary>
         /// <remarks>
@@ -301,10 +306,10 @@ namespace Octokit.Reactive
         /// <remarks>http://developer.github.com/v3/issues/#create-an-issue</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         /// <param name="issueUpdate">An <see cref="IssueUpdate"/> instance describing the changes to make to the issue
         /// </param>
-        IObservable<Issue> Update(string owner, string name, int number, IssueUpdate issueUpdate);
+        IObservable<Issue> Update(string owner, string name, long issueNumber, IssueUpdate issueUpdate);
 
         /// <summary>
         /// Creates an issue for the specified repository. Any user with pull access to a repository can create an
@@ -312,43 +317,9 @@ namespace Octokit.Reactive
         /// </summary>
         /// <remarks>http://developer.github.com/v3/issues/#create-an-issue</remarks>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
+        /// <param name="issueNumber">The issue number</param>
         /// <param name="issueUpdate">An <see cref="IssueUpdate"/> instance describing the changes to make to the issue
         /// </param>
-        IObservable<Issue> Update(long repositoryId, int number, IssueUpdate issueUpdate);
-
-        /// <summary>
-        /// Locks an issue for the specified repository. Issue owners and users with push access can lock an issue.
-        /// </summary>
-        /// <remarks>https://developer.github.com/v3/issues/#lock-an-issue</remarks>
-        /// <param name="owner">The owner of the repository</param>
-        /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
-        IObservable<Unit> Lock(string owner, string name, int number);
-
-        /// <summary>
-        /// Locks an issue for the specified repository. Issue owners and users with push access can lock an issue.
-        /// </summary>
-        /// <remarks>https://developer.github.com/v3/issues/#lock-an-issue</remarks>
-        /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
-        IObservable<Unit> Lock(long repositoryId, int number);
-
-        /// <summary>
-        /// Unlocks an issue for the specified repository. Issue owners and users with push access can unlock an issue.
-        /// </summary>
-        /// <remarks>https://developer.github.com/v3/issues/#unlock-an-issue</remarks>
-        /// <param name="owner">The owner of the repository</param>
-        /// <param name="name">The name of the repository</param>
-        /// <param name="number">The issue number</param>
-        IObservable<Unit> Unlock(string owner, string name, int number);
-
-        /// <summary>
-        /// Unlocks an issue for the specified repository. Issue owners and users with push access can unlock an issue.
-        /// </summary>
-        /// <remarks>https://developer.github.com/v3/issues/#unlock-an-issue</remarks>
-        /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="number">The issue number</param>
-        IObservable<Unit> Unlock(long repositoryId, int number);
+        IObservable<Issue> Update(long repositoryId, long issueNumber, IssueUpdate issueUpdate);
     }
 }

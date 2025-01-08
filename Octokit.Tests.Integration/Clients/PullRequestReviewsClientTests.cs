@@ -42,7 +42,7 @@ public class PullRequestReviewsClientTests
 
             var reviews = await _github.PullRequest.Review.GetAll("octokit", "octokit.net", 1648, options);
 
-            Assert.Equal(1, reviews.Count);
+            Assert.Single(reviews);
         }
 
         [IntegrationTest]
@@ -57,7 +57,7 @@ public class PullRequestReviewsClientTests
 
             var reviews = await _github.PullRequest.Review.GetAll("octokit", "octokit.net", 1648, options);
 
-            Assert.Equal(1, reviews.Count);
+            Assert.Single(reviews);
         }
 
         [IntegrationTest]
@@ -81,8 +81,8 @@ public class PullRequestReviewsClientTests
 
             var secondPage = await _github.PullRequest.Review.GetAll("octokit", "octokit.net", 1648, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Id, secondPage.First().Id);
         }
     }
@@ -126,7 +126,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanCreatePendingReview()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -156,7 +156,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanCreatePendingReviewWithRepositoryId()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -186,7 +186,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanCreateCommentedReview()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -217,7 +217,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanCreateCommentedReviewWithRepositoryId()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -248,7 +248,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanCreateChangesRequestedReview()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -279,7 +279,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanCreateChangesRequestedReviewWithRepositoryId()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -310,7 +310,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanCreateApprovedReview()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -341,7 +341,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanCreateApprovedReviewWithRepositoryId()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -388,7 +388,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanDeleteReview()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -405,7 +405,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanDeleteReviewWithRepositoryId()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -438,7 +438,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanDismissReview()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -453,7 +453,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanDismissReviewWithRepositoryId()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -502,7 +502,7 @@ public class PullRequestReviewsClientTests
 
             var comments = await _github.PullRequest.Review.GetAllComments("octokit", "octokit.net", 1648, 54646850, options);
 
-            Assert.Equal(1, comments.Count);
+            Assert.Single(comments);
         }
 
         [IntegrationTest]
@@ -517,7 +517,7 @@ public class PullRequestReviewsClientTests
 
             var comments = await _github.PullRequest.Review.GetAllComments("octokit", "octokit.net", 1648, 54646850, options);
 
-            Assert.Equal(1, comments.Count);
+            Assert.Single(comments);
         }
 
         [IntegrationTest]
@@ -541,8 +541,8 @@ public class PullRequestReviewsClientTests
 
             var secondPage = await _github.PullRequest.Review.GetAllComments("octokit", "octokit.net", 1648, 54646850, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Id, secondPage.First().Id);
         }
     }
@@ -565,7 +565,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanSubmitCommentedReview()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -586,7 +586,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanSubmitCommentedReviewWithRepositoryId()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -607,7 +607,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanSubmitChangesRequestedReview()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -628,7 +628,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanSubmitChangesRequestedReviewWithRepositoryId()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -649,7 +649,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanSubmitApprovedReview()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);
@@ -670,7 +670,7 @@ public class PullRequestReviewsClientTests
         [DualAccountTest]
         public async Task CanSubmitApprovedReviewWithRepositoryId()
         {
-            using (var context = await _github.CreateRepositoryContext("test-repo"))
+            using (var context = await _github.CreateRepositoryContextWithAutoInit("test-repo"))
             {
                 await _github.CreateTheWorld(context.Repository);
                 var pullRequest = await _github2.CreatePullRequest(context.Repository);

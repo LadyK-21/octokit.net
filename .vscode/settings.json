@@ -1,4 +1,5 @@
 {
+  "editor.formatOnSave": false,
   "files.exclude": {
     "**/bin": true,
     "**/obj": true,
@@ -10,5 +11,11 @@
   "files.insertFinalNewline": true,
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
-  "editor.insertSpaces": true
+  "editor.insertSpaces": true,
+  "[csharp]": {
+    "editor.tabSize": 4
+  },
+  "explorer.fileNesting.patterns": {
+    "*.cs": "I${capture}.cs",
+  },
 }

@@ -29,31 +29,6 @@ namespace Octokit.Internal
         {
             Ensure.ArgumentNotNull(getHandler, nameof(getHandler));
 
-#if HAS_SERVICEPOINTMANAGER
-            // GitHub API requires TLS1.2 as of February 2018
-            //
-            // .NET Framework before 4.6 did not enable TLS1.2 by default
-            //
-            // Even though this is an AppDomain wide setting, the decision was made for Octokit to
-            // ensure that TLS1.2 is enabled so that existing applications using Octokit did not need to
-            // make changes outside Octokit to continue to work with GitHub API
-            //
-            // *Update*
-            // .NET Framework 4.7 introduced a new value (SecurityProtocolType.SystemDefault = 0)
-            // which defers enabled protocols to operating system defaults
-            // If this is the current value we shouldn't do anything, as that would cause TLS1.2 to be the ONLY enabled protocol!
-            //
-            // See https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netframework-4.7
-            // See https://github.com/octokit/octokit.net/issues/1914
-
-            // Only apply when current setting is not SystemDefault (0) added in .NET 4.7
-            if ((int)ServicePointManager.SecurityProtocol != 0)
-            {
-                // Add Tls1.2 to the existing enabled protocols
-                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-            }
-#endif
-
             _http = new HttpClient(new RedirectHandler { InnerHandler = getHandler() });
         }
 
@@ -62,8 +37,9 @@ namespace Octokit.Internal
         /// </summary>
         /// <param name="request">A <see cref="IRequest"/> that represents the HTTP request</param>
         /// <param name="cancellationToken">Used to cancel the request</param>
+        /// <param name="preprocessResponseBody">Function to preprocess HTTP response prior to deserialization (can be null)</param>
         /// <returns>A <see cref="Task" /> of <see cref="IResponse"/></returns>
-        public async Task<IResponse> Send(IRequest request, CancellationToken cancellationToken)
+        public async Task<IResponse> Send(IRequest request, CancellationToken cancellationToken, Func<object, object> preprocessResponseBody = null)
         {
             Ensure.ArgumentNotNull(request, nameof(request));
 
@@ -73,7 +49,7 @@ namespace Octokit.Internal
             {
                 var responseMessage = await SendAsync(requestMessage, cancellationTokenForRequest).ConfigureAwait(false);
 
-                return await BuildResponse(responseMessage).ConfigureAwait(false);
+                return await BuildResponse(responseMessage, preprocessResponseBody).ConfigureAwait(false);
             }
         }
 
@@ -92,7 +68,7 @@ namespace Octokit.Internal
             return cancellationTokenForRequest;
         }
 
-        protected virtual async Task<IResponse> BuildResponse(HttpResponseMessage responseMessage)
+        protected virtual async Task<IResponse> BuildResponse(HttpResponseMessage responseMessage, Func<object, object> preprocessResponseBody)
         {
             Ensure.ArgumentNotNull(responseMessage, nameof(responseMessage));
 
@@ -107,22 +83,24 @@ namespace Octokit.Internal
                 "application/x-gzip" ,
                 "application/octet-stream"};
 
-            using (var content = responseMessage.Content)
+            var content = responseMessage.Content;
+            if (content != null)
             {
-                if (content != null)
-                {
-                    contentType = GetContentMediaType(responseMessage.Content);
+                contentType = GetContentMediaType(content);
 
-                    if (contentType != null && (contentType.StartsWith("image/") || binaryContentTypes
+                if (contentType != null && (contentType.StartsWith("image/") || binaryContentTypes
                         .Any(item => item.Equals(contentType, StringComparison.OrdinalIgnoreCase))))
-                    {
-                        responseBody = await responseMessage.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        responseBody = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    }
+                {
+                    responseBody = await content.ReadAsStreamAsync().ConfigureAwait(false);
                 }
+                else
+                {
+                    responseBody = await content.ReadAsStringAsync().ConfigureAwait(false);
+                    content.Dispose();
+                }
+
+                if (!(preprocessResponseBody is null))
+                    responseBody = preprocessResponseBody(responseBody);
             }
 
             var responseHeaders = responseMessage.Headers.ToDictionary(h => h.Key, h => h.Value.First());
@@ -190,10 +168,18 @@ namespace Octokit.Internal
 
         static string GetContentMediaType(HttpContent httpContent)
         {
-            if (httpContent.Headers != null && httpContent.Headers.ContentType != null)
+            if (httpContent.Headers?.ContentType != null)
             {
                 return httpContent.Headers.ContentType.MediaType;
             }
+
+            // Issue #2898 - Bad "zip" Content-Type coming from Blob Storage for artifacts
+            if (httpContent.Headers?.TryGetValues("Content-Type", out var contentTypeValues) == true
+                && contentTypeValues.FirstOrDefault() == "zip")
+            {
+                return "application/zip";
+            }
+            
             return null;
         }
 

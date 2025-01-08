@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Octokit
@@ -14,6 +16,62 @@ namespace Octokit
         public RepositoryCommitsClient(IApiConnection apiConnection)
             : base(apiConnection)
         {
+        }
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="sha1">Used to find all branches where the given commit SHA is the HEAD, or latest commit for the branch</param>
+        [ManualRoute("GET", "/repositories/{id}/commits/{commit_sha}/branches-where-head")]
+        public Task<IReadOnlyList<Branch>> BranchesWhereHead(long repositoryId, string sha1)
+        {
+            return BranchesWhereHead(repositoryId, sha1, ApiOptions.None);
+        }
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="sha1">Used to find all branches where the given commit SHA is the HEAD, or latest commit for the branch</param>
+        /// /// <param name="options">Options for changing the API response</param>
+        [ManualRoute("GET", "/repositories/{id}/commits/{commit_sha}/branches-where-head")]
+        public Task<IReadOnlyList<Branch>> BranchesWhereHead(long repositoryId, string sha1, ApiOptions options)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(sha1, nameof(sha1));
+            Ensure.ArgumentNotNull(options, nameof(options));
+
+            return ApiConnection.GetAll<Branch>(ApiUrls.RepositoryCommitsBranchesWhereHead(repositoryId, sha1), null, options);
+        }
+
+        /// <summary>
+        /// List pull requests associated with a commit
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="sha1">Used to find all branches where the given commit SHA is the HEAD, or latest commit for the branch</param>
+        [ManualRoute("GET", "/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head")]
+        public Task<IReadOnlyList<Branch>> BranchesWhereHead(string owner, string name, string sha1)
+        {
+            return BranchesWhereHead(owner, name, sha1, ApiOptions.None);
+        }
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="sha1">Used to find all branches where the given commit SHA is the HEAD, or latest commit for the branch</param>
+        /// /// <param name="options">Options for changing the API response</param>
+        [ManualRoute("GET", "/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head")]
+        public Task<IReadOnlyList<Branch>> BranchesWhereHead(string owner, string name, string sha1, ApiOptions options)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
+            Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
+            Ensure.ArgumentNotNullOrEmptyString(sha1, nameof(sha1));
+            Ensure.ArgumentNotNull(options, nameof(options));
+
+            return ApiConnection.GetAll<Branch>(ApiUrls.RepositoryCommitsBranchesWhereHead(owner, name, sha1), null, options);
         }
 
         /// <summary>
@@ -47,6 +105,74 @@ namespace Octokit
             Ensure.ArgumentNotNullOrEmptyString(head, nameof(head));
 
             return ApiConnection.Get<CompareResult>(ApiUrls.RepoCompare(repositoryId, @base, head));
+        }
+
+        /// <summary>
+        /// Compare two references in a repository
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="base">The reference to use as the base commit</param>
+        /// <param name="head">The reference to use as the head commit</param>
+        /// <param name="options">Options for changing the API response</param>
+        [ManualRoute("GET", "/repos/{owner}/{repo}/compare/{base}...{head}")]
+        public Task<CompareResult> Compare(string owner, string name, string @base, string head, ApiOptions options)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
+            Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
+            Ensure.ArgumentNotNullOrEmptyString(@base, nameof(@base));
+            Ensure.ArgumentNotNullOrEmptyString(head, nameof(head));
+            Ensure.ArgumentNotNull(options, nameof(options));
+
+            return Compare(ApiUrls.RepoCompare(owner, name, @base, head), options);
+        }
+
+        /// <summary>
+        /// Compare two references in a repository
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="base">The reference to use as the base commit</param>
+        /// <param name="head">The reference to use as the head commit</param>
+        /// <param name="options">Options for changing the API response</param>
+        [ManualRoute("GET", "/repositories/{id}/compare/{base}...{head}")]
+        public Task<CompareResult> Compare(long repositoryId, string @base, string head, ApiOptions options)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(@base, nameof(@base));
+            Ensure.ArgumentNotNullOrEmptyString(head, nameof(head));
+            Ensure.ArgumentNotNull(options, nameof(options));
+
+            return Compare(ApiUrls.RepoCompare(repositoryId, @base, head), options);
+        }
+
+        private async Task<CompareResult> Compare(Uri uri, ApiOptions options)
+        {
+            var results = await ApiConnection.GetAll<CompareResult>(uri, options);
+            if (results.Count == 1) return results[0];
+
+            var firstCompareResult = results[0];
+            var commits = firstCompareResult.Commits.ToList();
+            var files = firstCompareResult.Files.ToList();
+
+            foreach (var compareResult in results.Skip(1))
+            {
+                commits.AddRange(compareResult.Commits ?? Array.Empty<GitHubCommit>());
+                files.AddRange(compareResult.Files ?? Array.Empty<GitHubCommitFile>());
+            }
+
+            return new CompareResult(
+                firstCompareResult.Url,
+                firstCompareResult.HtmlUrl,
+                firstCompareResult.PermalinkUrl,
+                firstCompareResult.DiffUrl,
+                firstCompareResult.PatchUrl,
+                firstCompareResult.BaseCommit,
+                firstCompareResult.MergeBaseCommit,
+                firstCompareResult.Status,
+                firstCompareResult.AheadBy,
+                firstCompareResult.BehindBy,
+                firstCompareResult.TotalCommits,
+                commits,
+                files);
         }
 
         /// <summary>
@@ -203,7 +329,7 @@ namespace Octokit
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNullOrEmptyString(reference, nameof(reference));
 
-            return ApiConnection.Get<string>(ApiUrls.RepositoryCommit(owner, name, reference), null, AcceptHeaders.CommitReferenceSha1MediaType);
+            return ApiConnection.Get<string>(ApiUrls.RepositoryCommit(owner, name, reference), null);
         }
 
         /// <summary>
@@ -216,7 +342,63 @@ namespace Octokit
         {
             Ensure.ArgumentNotNullOrEmptyString(reference, nameof(reference));
 
-            return ApiConnection.Get<string>(ApiUrls.RepositoryCommit(repositoryId, reference), null, AcceptHeaders.CommitReferenceSha1MediaType);
+            return ApiConnection.Get<string>(ApiUrls.RepositoryCommit(repositoryId, reference), null);
+        }
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="sha1">Used to find all pull requests containing the provided commit SHA, which can be from any point in the commit history</param>
+        [ManualRoute("GET", "/repositories/{id}/commits/{commit_sha}/pulls")]
+        public Task<IReadOnlyList<CommitPullRequest>> PullRequests(long repositoryId, string sha1)
+        {
+            return PullRequests(repositoryId, sha1, ApiOptions.None);
+        }
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="sha1">Used to find all pull requests containing the provided commit SHA, which can be from any point in the commit history</param>
+        /// /// <param name="options">Options for changing the API response</param>
+        [ManualRoute("GET", "/repositories/{id}/commits/{commit_sha}/pulls")]
+        public Task<IReadOnlyList<CommitPullRequest>> PullRequests(long repositoryId, string sha1, ApiOptions options)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(sha1, nameof(sha1));
+            Ensure.ArgumentNotNull(options, nameof(options));
+
+            return ApiConnection.GetAll<CommitPullRequest>(ApiUrls.RepositoryCommitsPull(repositoryId, sha1), null, options);
+        }
+
+        /// <summary>
+        /// List pull requests associated with a commit
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="sha1">Used to find all pull requests containing the provided commit SHA, which can be from any point in the commit history</param>
+        [ManualRoute("GET", "/repos/{owner}/{repo}/commits/{commit_sha}/pulls")]
+        public Task<IReadOnlyList<CommitPullRequest>> PullRequests(string owner, string name, string sha1)
+        {
+            return PullRequests(owner, name, sha1, ApiOptions.None);
+        }
+
+        /// <summary>
+        /// Gets all pull requests for a given commit
+        /// </summary>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="sha1">Used to find all pull requests containing the provided commit SHA, which can be from any point in the commit history</param>
+        /// /// <param name="options">Options for changing the API response</param>
+        [ManualRoute("GET", "/repos/{owner}/{repo}/commits/{commit_sha}/pulls")]
+        public Task<IReadOnlyList<CommitPullRequest>> PullRequests(string owner, string name, string sha1, ApiOptions options)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
+            Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
+            Ensure.ArgumentNotNullOrEmptyString(sha1, nameof(sha1));
+            Ensure.ArgumentNotNull(options, nameof(options));
+
+            return ApiConnection.GetAll<CommitPullRequest>(ApiUrls.RepositoryCommitsPull(owner, name, sha1), null, options);
         }
     }
 }

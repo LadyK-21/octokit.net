@@ -143,9 +143,9 @@ namespace Octokit.Tests.Http
                 Assert.Equal(httpStatusCode, response.StatusCode);
                 Assert.Null(response.ContentType);
             }
-
+            
             [Fact]
-            public async Task BuildsByteArrayResponseFromResponseMessage()
+            public async Task BuildsStreamResponseFromResponseMessage()
             {
                 var responseMessage = new HttpResponseMessage
                 {
@@ -157,7 +157,9 @@ namespace Octokit.Tests.Http
 
                 var response = await tester.BuildResponseTester(responseMessage);
 
-                Assert.Equal(new byte[] { 0, 1, 1, 0, 1 }, response.Body);
+                var memoryStream = Assert.IsType<MemoryStream>(response.Body);
+                
+                Assert.Equal(new byte[] { 0, 1, 1, 0, 1 }, memoryStream.ToArray());
                 Assert.Equal("image/png", response.ContentType);
             }
 
@@ -175,6 +177,27 @@ namespace Octokit.Tests.Http
 
                 Assert.Equal("application/json", response.ContentType);
             }
+            
+            // See #2898 for why this is necessary
+            // Non standard MIME Content-Type coming from Blob Storage when downloading artifacts
+            [Fact]
+            public async Task SetsZipContentType()
+            {
+                var memoryStream = new MemoryStream();
+                var streamContent = new StreamContent(memoryStream);
+                streamContent.Headers.TryAddWithoutValidation("Content-Type", "zip");
+                
+                var responseMessage = new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = streamContent
+                };
+                var tester = new HttpClientAdapterTester();
+
+                var response = await tester.BuildResponseTester(responseMessage);
+
+                Assert.Equal("application/zip", response.ContentType);
+            }
         }
 
         sealed class HttpClientAdapterTester : HttpClientAdapter
@@ -189,9 +212,9 @@ namespace Octokit.Tests.Http
                 return BuildRequestMessage(request);
             }
 
-            public async Task<IResponse> BuildResponseTester(HttpResponseMessage responseMessage)
+            public async Task<IResponse> BuildResponseTester(HttpResponseMessage responseMessage, Func<object, object> preprocessResponseBody = null)
             {
-                return await BuildResponse(responseMessage);
+                return await BuildResponse(responseMessage, preprocessResponseBody);
             }
         }
     }

@@ -92,7 +92,7 @@ namespace Octokit.Tests.Models
                   ""stargazers_count"": 80,
                   ""watchers_count"": 80,
                   ""size"": 108,
-                  ""default_branch"": ""master"",
+                  ""default_branch"": ""main"",
                   ""open_issues_count"": 0,
                   ""has_issues"": true,
                   ""has_wiki"": true,
@@ -119,7 +119,7 @@ namespace Octokit.Tests.Models
 
             Assert.Equal(79, _migration.Id);
             Assert.Equal("0b989ba4-242f-11e5-81e1-c7b6966d2516", _migration.Guid);
-            Assert.Equal(1, _migration.Repositories.Count);
+            Assert.Single(_migration.Repositories);
             Assert.Equal(1296269, _migration.Repositories[0].Id);
             Assert.Equal(Migration.MigrationState.Pending, _migration.State);
         }
@@ -151,7 +151,7 @@ namespace Octokit.Tests.Models
             var _migrationReuqest = serializer.Deserialize<StartMigrationRequest>(migrationRequestJson);
 
             Assert.Equal("octocat/Hello-World", _migrationReuqest.Repositories[0]);
-            Assert.Equal(1, _migrationReuqest.Repositories.Count);
+            Assert.Single(_migrationReuqest.Repositories);
             Assert.True(_migrationReuqest.LockRepositories);
         }
     }

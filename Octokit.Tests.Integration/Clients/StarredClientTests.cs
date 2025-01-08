@@ -47,7 +47,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForCurrent(options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -61,7 +61,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForCurrent(options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -85,8 +85,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllForCurrent(skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Id, secondPage.First().Id);
         }
 
@@ -111,7 +111,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForCurrent(starredRequest, options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -127,7 +127,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForCurrent(starredRequest, options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -154,8 +154,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllForCurrent(starredRequestSecondPage, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Id, secondPage.First().Id);
         }
 
@@ -167,6 +167,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var repo = stars.FirstOrDefault(star => star.Repo.Owner.Login == _repositoryContext.RepositoryOwner && star.Repo.Name == _repositoryContext.RepositoryName);
             Assert.NotNull(repo);
+            Assert.NotEqual(DateTimeOffset.MinValue, repo.StarredAt);
+            Assert.NotNull(repo.Repo);
         }
 
         [IntegrationTest]
@@ -179,7 +181,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForCurrentWithTimestamps(options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -193,7 +195,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForCurrentWithTimestamps(options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -217,8 +219,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllForCurrentWithTimestamps(skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Repo.Id, secondPage.First().Repo.Id);
         }
 
@@ -232,6 +234,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var repo = stars.FirstOrDefault(star => star.Repo.Owner.Login == _repositoryContext.RepositoryOwner && star.Repo.Name == _repositoryContext.RepositoryName);
             Assert.NotNull(repo);
+            Assert.NotEqual(DateTimeOffset.MinValue, repo.StarredAt);
+            Assert.NotNull(repo.Repo);
 
             for (int i = 1; i < stars.Count; i++)
             {
@@ -251,7 +255,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var stars = await _fixture.GetAllForCurrentWithTimestamps(starredRequest, options);
-            Assert.Equal(1, stars.Count);
+            Assert.Single(stars);
 
             for (int i = 1; i < stars.Count; i++)
             {
@@ -272,7 +276,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var stars = await _fixture.GetAllForCurrentWithTimestamps(starredRequest, options);
-            Assert.Equal(1, stars.Count);
+            Assert.Single(stars);
 
             for (int i = 1; i < stars.Count; i++)
             {
@@ -303,8 +307,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllForCurrentWithTimestamps(starredRequest, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Repo.Id, secondPage.First().Repo.Id);
 
             for (int i = 1; i < firstPage.Count; i++)
@@ -333,7 +337,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForUser(Helper.UserName, options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -347,7 +351,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForUser(Helper.UserName, options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -371,8 +375,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllForUser(Helper.UserName, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Id, secondPage.First().Id);
         }
 
@@ -400,7 +404,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForUser(Helper.UserName, starredRequest, options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -416,7 +420,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var repositories = await _fixture.GetAllForUser(Helper.UserName, starredRequest, options);
-            Assert.Equal(1, repositories.Count);
+            Assert.Single(repositories);
         }
 
         [IntegrationTest]
@@ -443,8 +447,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllForUser(Helper.UserName, starredRequestSecondPage, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Id, secondPage.First().Id);
         }
 
@@ -456,6 +460,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var star = stars.FirstOrDefault(repositoryStar => repositoryStar.Repo.Owner.Login == _repositoryContext.RepositoryOwner && repositoryStar.Repo.Name == _repositoryContext.RepositoryName);
             Assert.NotNull(star);
+            Assert.NotEqual(DateTimeOffset.MinValue, star.StarredAt);
+            Assert.NotNull(star.Repo);
         }
 
         [IntegrationTest]
@@ -468,7 +474,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var stars = await _fixture.GetAllForUserWithTimestamps(Helper.UserName, options);
-            Assert.Equal(1, stars.Count);
+            Assert.Single(stars);
         }
 
         [IntegrationTest]
@@ -482,7 +488,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var stars = await _fixture.GetAllForUserWithTimestamps(Helper.UserName, options);
-            Assert.Equal(1, stars.Count);
+            Assert.Single(stars);
         }
 
         [IntegrationTest]
@@ -506,8 +512,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllForUserWithTimestamps(Helper.UserName, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Repo.Id, secondPage.First().Repo.Id);
         }
 
@@ -521,6 +527,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var repo = stars.FirstOrDefault(repository => repository.Repo.Owner.Login == _repositoryContext.RepositoryOwner && repository.Repo.Name == _repositoryContext.RepositoryName);
             Assert.NotNull(repo);
+            Assert.NotEqual(DateTimeOffset.MinValue, repo.StarredAt);
+            Assert.NotNull(repo.Repo);
 
             for (int i = 1; i < stars.Count; i++)
             {
@@ -540,7 +548,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var stars = await _fixture.GetAllForUserWithTimestamps(Helper.UserName, starredRequest, options);
-            Assert.Equal(1, stars.Count);
+            Assert.Single(stars);
 
             for (int i = 1; i < stars.Count; i++)
             {
@@ -561,7 +569,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var stars = await _fixture.GetAllForUserWithTimestamps(Helper.UserName, starredRequest, options);
-            Assert.Equal(1, stars.Count);
+            Assert.Single(stars);
 
             for (int i = 1; i < stars.Count; i++)
             {
@@ -592,8 +600,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllForUserWithTimestamps(Helper.UserName, starredRequest, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Repo.Id, secondPage.First().Repo.Id);
 
             for (int i = 0; i < firstPage.Count; i++)
@@ -632,7 +640,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var users = await _fixture.GetAllStargazers("octokit", "octokit.net", options);
-            Assert.Equal(1, users.Count);
+            Assert.Single(users);
         }
 
         [IntegrationTest]
@@ -645,7 +653,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var users = await _fixture.GetAllStargazers(7528679, options);
-            Assert.Equal(1, users.Count);
+            Assert.Single(users);
         }
 
         [IntegrationTest]
@@ -659,7 +667,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var users = await _fixture.GetAllStargazers("octokit", "octokit.net", options);
-            Assert.Equal(1, users.Count);
+            Assert.Single(users);
         }
 
         [IntegrationTest]
@@ -673,7 +681,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var users = await _fixture.GetAllStargazers(7528679, options);
-            Assert.Equal(1, users.Count);
+            Assert.Single(users);
         }
 
         [IntegrationTest]
@@ -697,8 +705,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllStargazers("octokit", "octokit.net", skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Id, secondPage.First().Id);
         }
 
@@ -723,8 +731,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllStargazers(7528679, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().Id, secondPage.First().Id);
         }
 
@@ -736,6 +744,9 @@ namespace Octokit.Tests.Integration.Clients
 
             var userStar = users.FirstOrDefault(star => star.User.Login == _repositoryContext.RepositoryOwner);
             Assert.NotNull(userStar);
+            Assert.NotEqual(DateTimeOffset.MinValue, userStar.StarredAt);
+            Assert.NotNull(userStar.User);
+            Assert.NotNull(userStar.User.Login);
 
             Assert.True(DateTimeOffset.UtcNow.Subtract(userStar.StarredAt) < TimeSpan.FromMinutes(5));
         }
@@ -762,7 +773,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var userStars = await _fixture.GetAllStargazersWithTimestamps("octokit", "octokit.net", options);
-            Assert.Equal(1, userStars.Count);
+            Assert.Single(userStars);
         }
 
         [IntegrationTest]
@@ -775,7 +786,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var userStars = await _fixture.GetAllStargazersWithTimestamps(7528679, options);
-            Assert.Equal(1, userStars.Count);
+            Assert.Single(userStars);
         }
 
         [IntegrationTest]
@@ -789,7 +800,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var userStars = await _fixture.GetAllStargazersWithTimestamps("octokit", "octokit.net", options);
-            Assert.Equal(1, userStars.Count);
+            Assert.Single(userStars);
         }
 
         [IntegrationTest]
@@ -803,7 +814,7 @@ namespace Octokit.Tests.Integration.Clients
             };
 
             var userStars = await _fixture.GetAllStargazersWithTimestamps(7528679, options);
-            Assert.Equal(1, userStars.Count);
+            Assert.Single(userStars);
         }
 
         [IntegrationTest]
@@ -827,8 +838,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllStargazersWithTimestamps("octokit", "octokit.net", skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().StarredAt, secondPage.First().StarredAt);
         }
 
@@ -853,8 +864,8 @@ namespace Octokit.Tests.Integration.Clients
 
             var secondPage = await _fixture.GetAllStargazersWithTimestamps(7528679, skipStartOptions);
 
-            Assert.Equal(1, firstPage.Count);
-            Assert.Equal(1, secondPage.Count);
+            Assert.Single(firstPage);
+            Assert.Single(secondPage);
             Assert.NotEqual(firstPage.First().StarredAt, secondPage.First().StarredAt);
         }
 

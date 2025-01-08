@@ -9,8 +9,8 @@ public class ProjectCardsClientTests
 {
     public class TheGetAllMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheGetAllMethod()
         {
@@ -47,7 +47,7 @@ public class ProjectCardsClientTests
 
             var result = await _github.Repository.Project.Card.GetAll(column.Id, request);
 
-            Assert.Equal(1, result.Count);
+            Assert.Single(result);
             Assert.Contains(result, x => x.Id == card2.Id);
         }
 
@@ -63,7 +63,7 @@ public class ProjectCardsClientTests
 
             var result = await _github.Repository.Project.Card.GetAll(column.Id, request);
 
-            Assert.Equal(1, result.Count);
+            Assert.Single(result);
             Assert.Contains(result, x => x.Id == card1.Id);
         }
 
@@ -101,7 +101,7 @@ public class ProjectCardsClientTests
             var cards = await _github.Repository.Project.Card.GetAll(column.Id, options);
 
             // NOTE: cards are returned in reverse order
-            Assert.Equal(1, cards.Count);
+            Assert.Single(cards);
             Assert.Equal(card2.Id, cards[0].Id);
         }
 
@@ -123,7 +123,7 @@ public class ProjectCardsClientTests
             var cards = await _github.Repository.Project.Card.GetAll(column.Id, options);
 
             // NOTE: cards are returned in reverse order
-            Assert.Equal(1, cards.Count);
+            Assert.Single(cards);
             Assert.Equal(card1.Id, cards[0].Id);
         }
 
@@ -164,8 +164,8 @@ public class ProjectCardsClientTests
 
     public class TheGetMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheGetMethod()
         {
@@ -196,14 +196,14 @@ public class ProjectCardsClientTests
 
     public class TheCreateMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheCreateMethod()
         {
             _github = Helper.GetAuthenticatedClient();
 
-            _context = _github.CreateRepositoryContext("public-repo").Result;
+            _context = _github.CreateRepositoryContextWithAutoInit("public-repo").Result;
         }
 
         [IntegrationTest]
@@ -252,8 +252,8 @@ public class ProjectCardsClientTests
 
     public class TheUpdateMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheUpdateMethod()
         {
@@ -325,8 +325,8 @@ public class ProjectCardsClientTests
 
     public class TheDeleteMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheDeleteMethod()
         {
@@ -357,8 +357,8 @@ public class ProjectCardsClientTests
 
     public class TheMoveMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheMoveMethod()
         {
@@ -453,7 +453,7 @@ public class ProjectCardsClientTests
         return result;
     }
 
-    private static async Task<ProjectCard> CreateIssueCardHelper(IGitHubClient githubClient, int issueId, int columnId)
+    private static async Task<ProjectCard> CreateIssueCardHelper(IGitHubClient githubClient, long issueId, int columnId)
     {
         var newCard = new NewProjectCard(issueId, ProjectCardContentType.Issue);
         var result = await githubClient.Repository.Project.Card.Create(columnId, newCard);

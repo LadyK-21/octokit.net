@@ -68,9 +68,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(owner, name);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 1),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 1));
             }
 
             [Fact]
@@ -80,9 +79,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(repositoryId);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 1),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 1));
             }
 
             [Fact]
@@ -100,9 +98,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(owner, name, options);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 3),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 3));
 
                 // StartPage is setted => only 1 option (StartPage) in dictionary
                 options = new ApiOptions
@@ -112,9 +109,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(owner, name, options);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 2),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 2));
 
                 // PageCount is setted => none of options in dictionary
                 options = new ApiOptions
@@ -124,9 +120,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(owner, name, options);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 1),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 1));
             }
 
             [Fact]
@@ -138,9 +133,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(owner, name, request);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "all"),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "all"));
 
                 request = new RepositoryCollaboratorListRequest
                 {
@@ -149,9 +143,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(owner, name, request);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "direct"),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "direct"));
 
                 // PageCount is setted => none of options in dictionary
                 request = new RepositoryCollaboratorListRequest
@@ -161,9 +154,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(owner, name, request);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "outside"),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "outside"));
             }
 
             [Fact]
@@ -181,9 +173,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(repositoryId, options);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 3),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 3));
 
                 // StartPage is setted => only 1 option (StartPage) in dictionary
                 options = new ApiOptions
@@ -193,9 +184,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(repositoryId, options);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 2),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 2));
 
                 // PageCount is setted => none of options in dictionary
                 options = new ApiOptions
@@ -205,9 +195,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(repositoryId, options);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 1),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(dictionary => dictionary.Count == 1));
             }
 
             [Fact]
@@ -219,9 +208,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(repositoryId, request);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "all"),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "all"));
 
                 request = new RepositoryCollaboratorListRequest
                 {
@@ -230,9 +218,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(repositoryId, request);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "direct"),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "direct"));
 
                 request = new RepositoryCollaboratorListRequest
                 {
@@ -241,9 +228,8 @@ namespace Octokit.Tests.Reactive
 
                 _client.GetAll(repositoryId, request);
                 _githubClient.Connection.Received(1)
-                    .Get<List<User>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
-                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "outside"),
-                        null);
+                    .Get<List<Collaborator>>(Arg.Is<Uri>(u => u.ToString() == expectedUrl),
+                        Arg.Is<IDictionary<string, string>>(d => d["affiliation"] == "outside"));
             }
         }
 
@@ -521,7 +507,7 @@ namespace Octokit.Tests.Reactive
             public void EnsuresNonNullArguments()
             {
                 SetupWithNonReactiveClient();
-                var permission = new CollaboratorRequest(Permission.Push);
+                var permission = new CollaboratorRequest("push");
 
                 Assert.Throws<ArgumentNullException>(() => _client.Invite(null, "repo", "user", permission));
                 Assert.Throws<ArgumentNullException>(() => _client.Invite("owner", null, "user", permission));
@@ -533,7 +519,7 @@ namespace Octokit.Tests.Reactive
             public void EnsuresNonEmptyArguments()
             {
                 SetupWithNonReactiveClient();
-                var permission = new CollaboratorRequest(Permission.Push);
+                var permission = new CollaboratorRequest("push");
 
                 Assert.Throws<ArgumentException>(() => _client.Invite("", "repo", "user", permission));
                 Assert.Throws<ArgumentException>(() => _client.Invite("owner", "", "user", permission));
@@ -544,7 +530,7 @@ namespace Octokit.Tests.Reactive
             public async Task EnsuresNonWhitespaceArguments()
             {
                 SetupWithNonReactiveClient();
-                var permission = new CollaboratorRequest(Permission.Push);
+                var permission = new CollaboratorRequest("push");
 
                 await AssertEx.ThrowsWhenGivenWhitespaceArgument(
                     async whitespace => await _client.Invite(whitespace, "repo", "user", permission));
@@ -558,7 +544,7 @@ namespace Octokit.Tests.Reactive
             public void CallsInviteOnRegularDeploymentsClient()
             {
                 SetupWithoutNonReactiveClient();
-                var permission = new CollaboratorRequest(Permission.Push);
+                var permission = new CollaboratorRequest("push");
 
                 _client.Invite("owner", "repo", "user", permission);
 

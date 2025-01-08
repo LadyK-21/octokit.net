@@ -74,8 +74,6 @@ namespace Octokit.Tests.Integration
 
         static readonly Lazy<Credentials> _githubAppCredentials = new Lazy<Credentials>(() =>
         {
-            // GitHubJwt nuget package only available for netstandard2.0+
-#if GITHUBJWT_HELPER_AVAILABLE
             var generator = new GitHubJwt.GitHubJwtFactory(
                 new GitHubJwt.FilePrivateKeySource(GitHubAppPemFile),
                 new GitHubJwt.GitHubJwtFactoryOptions
@@ -87,11 +85,6 @@ namespace Octokit.Tests.Integration
 
             var jwtToken = generator.CreateEncodedJwtToken();
             return new Credentials(jwtToken, AuthenticationType.Bearer);
-#else
-            // return null, which will cause the [GitHubAppTest]'s to not be discovered
-            return null;
-#endif
-
         });
 
         static readonly Lazy<Uri> _customUrl = new Lazy<Uri>(() =>
@@ -107,13 +100,18 @@ namespace Octokit.Tests.Integration
         static Helper()
         {
             // Force reading of environment variables.
-            // This wasn't happening if UserName/Organization were 
+            // This wasn't happening if UserName/Organization were
             // retrieved before Credentials.
             Debug.WriteIf(Credentials == null, "No credentials specified.");
         }
 
         public static string UserName { get; private set; }
+
         public static string Organization { get; private set; }
+
+        public static bool HasNoOrganization => Organization == null;
+
+        public static bool HasOrganization => Organization != null;
 
         /// <summary>
         /// These credentials should be set to a test GitHub account using the powershell script configure-integration-tests.ps1
@@ -173,6 +171,11 @@ namespace Octokit.Tests.Integration
             get { return Environment.GetEnvironmentVariable("OCTOKIT_GITHUBAPP_SLUG"); }
         }
 
+        public static string RepositoryWithCodespaces
+        {
+            get { return Environment.GetEnvironmentVariable("OCTOKIT_REPOSITORY_WITH_CODESPACES"); }
+        }
+
         public static void DeleteRepo(IConnection connection, Repository repository)
         {
             if (repository != null)
@@ -192,15 +195,15 @@ namespace Octokit.Tests.Integration
         public static void DeleteTeam(IConnection connection, Team team)
         {
             if (team != null)
-                DeleteTeam(connection, team.Id);
+                DeleteTeam(connection, team.Slug);
         }
 
-        public static void DeleteTeam(IConnection connection, int teamId)
+        public static void DeleteTeam(IConnection connection, string slug)
         {
             try
             {
                 var client = new GitHubClient(connection);
-                client.Organization.Team.Delete(teamId).Wait(TimeSpan.FromSeconds(15));
+                client.Organization.Team.Delete(Organization, slug).Wait(TimeSpan.FromSeconds(15));
             }
             catch { }
         }
@@ -211,7 +214,7 @@ namespace Octokit.Tests.Integration
                 DeleteKey(connection, key.Id);
         }
 
-        public static void DeleteKey(IConnection connection, int keyId)
+        public static void DeleteKey(IConnection connection, long keyId)
         {
             try
             {
@@ -227,7 +230,7 @@ namespace Octokit.Tests.Integration
                 DeleteGpgKey(connection, key.Id);
         }
 
-        public static void DeleteGpgKey(IConnection connection, int keyId)
+        public static void DeleteGpgKey(IConnection connection, long keyId)
         {
             try
             {
@@ -241,6 +244,8 @@ namespace Octokit.Tests.Integration
         {
             return string.Concat(name, "-", DateTime.UtcNow.ToString("yyyyMMddhhmmssfff"));
         }
+
+        public static bool IsNameTimestamped(string name) => name.Contains("-") && name.Substring(name.LastIndexOf("-")).Length == 18;
 
         public static Stream LoadFixture(string fileName)
         {
@@ -323,19 +328,19 @@ namespace Octokit.Tests.Integration
             };
         }
 
-        public static void DeleteInvitations(IConnection connection, List<string> invitees, int teamId)
+        public static void DeleteInvitations(IConnection connection, List<string> invitees)
         {
             try
             {
                 foreach (var invitee in invitees)
                 {
-                    connection.Delete(new Uri($"orgs/{Organization}/memberships/{invitee}", UriKind.Relative), null, AcceptHeaders.OrganizationMembershipPreview).Wait(TimeSpan.FromSeconds(15));
+                    connection.Delete(new Uri($"orgs/{Organization}/memberships/{invitee}", UriKind.Relative)).Wait(TimeSpan.FromSeconds(15));
                 }
             }
             catch { }
         }
 
-        public static string InviteMemberToTeam(IConnection connection, int teamId, string login)
+        public static string InviteMemberToTeam(IConnection connection, long teamId, string login)
         {
             try
             {

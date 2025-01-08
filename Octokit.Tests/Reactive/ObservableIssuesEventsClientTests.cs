@@ -36,13 +36,13 @@ namespace Octokit.Tests.Reactive
                 var client = new ObservableIssuesEventsClient(gitHubClient);
 
                 IApiResponse<List<IssueEvent>> response = new ApiResponse<List<IssueEvent>>(CreateResponse(HttpStatusCode.OK), result);
-                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Args.EmptyDictionary, null)
+                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Args.EmptyDictionary)
                     .Returns(Task.FromResult(response));
 
                 var eventInfos = await client.GetAllForIssue("fake", "repo", 42).ToList();
 
-                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/issues/42/events"), Args.EmptyDictionary, null);
-                Assert.Equal(1, eventInfos.Count);
+                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/issues/42/events"), Args.EmptyDictionary);
+                Assert.Single(eventInfos);
             }
 
             [Fact]
@@ -55,13 +55,13 @@ namespace Octokit.Tests.Reactive
                 var client = new ObservableIssuesEventsClient(gitHubClient);
 
                 IApiResponse<List<IssueEvent>> response = new ApiResponse<List<IssueEvent>>(CreateResponse(HttpStatusCode.OK), result);
-                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Args.EmptyDictionary, null)
+                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Args.EmptyDictionary)
                     .Returns(Task.FromResult(response));
 
                 var eventInfos = await client.GetAllForIssue(1, 42).ToList();
 
-                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/issues/42/events"), Args.EmptyDictionary, null);
-                Assert.Equal(1, eventInfos.Count);
+                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/issues/42/events"), Args.EmptyDictionary);
+                Assert.Single(eventInfos);
             }
 
             [Fact]
@@ -81,13 +81,13 @@ namespace Octokit.Tests.Reactive
                 };
 
                 IApiResponse<List<IssueEvent>> response = new ApiResponse<List<IssueEvent>>(CreateResponse(HttpStatusCode.OK), result);
-                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Arg.Is<Dictionary<string, string>>(d => d.Count == 2), null)
+                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Arg.Is<Dictionary<string, string>>(d => d.Count == 2))
                     .Returns(Task.FromResult(response));
 
                 var eventInfos = await client.GetAllForIssue("fake", "repo", 42, options).ToList();
 
-                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/issues/42/events"), Arg.Is<Dictionary<string, string>>(d => d.Count == 2), null);
-                Assert.Equal(1, eventInfos.Count);
+                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/issues/42/events"), Arg.Is<Dictionary<string, string>>(d => d.Count == 2));
+                Assert.Single(eventInfos);
             }
 
             [Fact]
@@ -108,13 +108,13 @@ namespace Octokit.Tests.Reactive
 
                 IApiResponse<List<IssueEvent>> response = new ApiResponse<List<IssueEvent>>(
                     CreateResponse(HttpStatusCode.OK), result);
-                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Arg.Is<Dictionary<string, string>>(d => d.Count == 2), null)
+                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Arg.Is<Dictionary<string, string>>(d => d.Count == 2))
                     .Returns(Task.FromResult(response));
 
                 var eventInfos = await client.GetAllForIssue(1, 42, options).ToList();
 
-                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/issues/42/events"), Arg.Is<Dictionary<string, string>>(d => d.Count == 2), null);
-                Assert.Equal(1, eventInfos.Count);
+                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/issues/42/events"), Arg.Is<Dictionary<string, string>>(d => d.Count == 2));
+                Assert.Single(eventInfos);
             }
 
             [Fact]
@@ -149,13 +149,13 @@ namespace Octokit.Tests.Reactive
                 var client = new ObservableIssuesEventsClient(gitHubClient);
 
                 IApiResponse<List<IssueEvent>> response = new ApiResponse<List<IssueEvent>>(CreateResponse(HttpStatusCode.OK), result);
-                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Args.EmptyDictionary, null)
+                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Args.EmptyDictionary)
                     .Returns(Task.FromResult(response));
 
                 var issueEvents = await client.GetAllForRepository("fake", "repo").ToList();
 
-                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/issues/events"), Args.EmptyDictionary, null);
-                Assert.Equal(1, issueEvents.Count);
+                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/issues/events"), Args.EmptyDictionary);
+                Assert.Single(issueEvents);
             }
 
             [Fact]
@@ -168,13 +168,13 @@ namespace Octokit.Tests.Reactive
                 var client = new ObservableIssuesEventsClient(gitHubClient);
 
                 IApiResponse<List<IssueEvent>> response = new ApiResponse<List<IssueEvent>>(CreateResponse(HttpStatusCode.OK), result);
-                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Args.EmptyDictionary, null)
+                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Args.EmptyDictionary)
                     .Returns(Task.FromResult(response));
 
                 var issueEvents = await client.GetAllForRepository(1).ToList();
 
-                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/issues/events"), Args.EmptyDictionary, null);
-                Assert.Equal(1, issueEvents.Count);
+                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/issues/events"), Args.EmptyDictionary);
+                Assert.Single(issueEvents);
             }
 
             [Fact]
@@ -194,13 +194,13 @@ namespace Octokit.Tests.Reactive
                 };
 
                 IApiResponse<List<IssueEvent>> response = new ApiResponse<List<IssueEvent>>(CreateResponse(HttpStatusCode.OK), result);
-                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Arg.Is<Dictionary<string, string>>(d => d.Count == 2), null)
+                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Arg.Is<Dictionary<string, string>>(d => d.Count == 2))
                     .Returns(Task.FromResult(response));
 
                 var issueEvents = await client.GetAllForRepository("fake", "repo", options).ToList();
 
-                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/issues/events"), Arg.Is<Dictionary<string, string>>(d => d.Count == 2), null);
-                Assert.Equal(1, issueEvents.Count);
+                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repos/fake/repo/issues/events"), Arg.Is<Dictionary<string, string>>(d => d.Count == 2));
+                Assert.Single(issueEvents);
             }
 
             [Fact]
@@ -220,13 +220,13 @@ namespace Octokit.Tests.Reactive
                 };
 
                 IApiResponse<List<IssueEvent>> response = new ApiResponse<List<IssueEvent>>(CreateResponse(HttpStatusCode.OK), result);
-                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Arg.Is<Dictionary<string, string>>(d => d.Count == 2), null)
+                gitHubClient.Connection.Get<List<IssueEvent>>(Args.Uri, Arg.Is<Dictionary<string, string>>(d => d.Count == 2))
                     .Returns(Task.FromResult(response));
 
                 var issueEvents = await client.GetAllForRepository(1, options).ToList();
 
-                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/issues/events"), Arg.Is<Dictionary<string, string>>(d => d.Count == 2), null);
-                Assert.Equal(1, issueEvents.Count);
+                connection.Received().Get<List<IssueEvent>>(Arg.Is<Uri>(u => u.ToString() == "repositories/1/issues/events"), Arg.Is<Dictionary<string, string>>(d => d.Count == 2));
+                Assert.Single(issueEvents);
             }
 
             [Fact]

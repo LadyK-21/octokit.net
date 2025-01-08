@@ -253,7 +253,7 @@ namespace Octokit.Reactive
         /// </summary>
         /// <remarks>
         /// This method requires authentication.
-        /// See the <a href="http://developer.github.com/v3/orgs/members/#publicize-a-users-membership">API documentation</a> 
+        /// See the <a href="http://developer.github.com/v3/orgs/members/#publicize-a-users-membership">API documentation</a>
         /// for more information.
         /// </remarks>
         /// <param name="org">The login for the organization</param>
@@ -289,7 +289,7 @@ namespace Octokit.Reactive
         IObservable<OrganizationMembership> GetOrganizationMembership(string org, string user);
 
         /// <summary>
-        /// Add a user to the organization or update the user's role withing the organization. 
+        /// Add a user to the organization or update the user's role withing the organization.
         /// </summary>
         /// <remarks>
         /// This method requires authentication.
@@ -303,6 +303,21 @@ namespace Octokit.Reactive
         /// changes to make to the user's organization membership</param>
         /// <returns></returns>
         IObservable<OrganizationMembership> AddOrUpdateOrganizationMembership(string org, string user, OrganizationMembershipUpdate addOrUpdateRequest);
+
+        /// <summary>
+        /// Create an organization invitation for a user
+        /// </summary>
+        /// <remarks>
+        /// This method requires authentication.
+        /// The authenticated user must be an organization owner.
+        /// See the <a href="https://developer.github.com/v3/orgs/members/#create-an-organization-invitation">API documentation</a>
+        /// for more information.
+        /// </remarks>
+        /// <param name="org">The login for the organization</param>
+        /// <param name="invitationRequest">An <see cref="OrganizationInvitationRequest"/> instance containing the
+        /// details of the organization invitation</param>
+        /// <returns></returns>
+        IObservable<OrganizationMembershipInvitation> CreateOrganizationInvitation(string org, OrganizationInvitationRequest invitationRequest);
 
         /// <summary>
         /// Remove a user's membership with an organization.
@@ -340,5 +355,63 @@ namespace Octokit.Reactive
         /// <param name="options">Options to change API behaviour</param>
         /// <returns></returns>
         IObservable<OrganizationMembershipInvitation> GetAllPendingInvitations(string org, ApiOptions options);
+
+        /// <summary>
+        /// List failed organization invitations.
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/rest/orgs/members#list-failed-organization-invitations">API Documentation</a>
+        /// for more information.
+        /// </remarks>
+        /// <param name="org">The login for the organization</param>
+        /// <returns></returns>
+        IObservable<OrganizationMembershipInvitation> GetAllFailedInvitations(string org);
+
+        /// <summary>
+        /// List failed organization invitations.
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/rest/orgs/members#list-failed-organization-invitations">API Documentation</a>
+        /// for more information.
+        /// </remarks>
+        /// <param name="org">The login for the organization</param>
+        /// <param name="options">Options to change API behaviour</param>
+        /// <returns></returns>
+        IObservable<OrganizationMembershipInvitation> GetAllFailedInvitations(string org, ApiOptions options);
+
+        /// <summary>
+        /// Cancel an organization invitation. In order to cancel an organization invitation, the authenticated user must be an organization owner.
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/en/rest/orgs/members#cancel-an-organization-invitation">API Documentation</a>
+        /// for more information.
+        /// </remarks>
+        /// <param name="org">The login for the organization</param>
+        /// <param name="invitationId">The unique identifier of the invitation</param>
+        /// <returns></returns>
+        IObservable<Unit> CancelOrganizationInvitation(string org, long invitationId);
+
+        /// <summary>
+        /// Returns all <see cref="OrganizationMembership" />s for the current user.
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/en/rest/orgs/members#list-organization-memberships-for-the-authenticated-user">API Documentation</a>
+        /// for more information.
+        /// </remarks>
+        /// <exception cref="ApiException">Thrown when a general API error occurs.</exception>
+        /// <returns></returns>
+        IObservable<OrganizationMembership> GetAllOrganizationMembershipsForCurrent();
+
+        /// <summary>
+        /// Returns all <see cref="OrganizationMembership" />s for the current user.
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="https://docs.github.com/en/rest/orgs/members#list-organization-memberships-for-the-authenticated-user">API Documentation</a>
+        /// for more information.
+        /// </remarks>
+        /// <exception cref="ApiException">Thrown when a general API error occurs.</exception>
+        /// <param name="options">Options to change API behaviour</param>
+        /// <returns></returns>
+        IObservable<OrganizationMembership> GetAllOrganizationMembershipsForCurrent(ApiOptions options);
     }
 }

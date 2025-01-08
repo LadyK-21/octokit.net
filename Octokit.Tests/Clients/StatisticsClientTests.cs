@@ -35,7 +35,7 @@ namespace Octokit.Tests.Clients
 
                 var result = await client.GetContributors("owner", "name");
 
-                Assert.Equal(1, result.Count);
+                Assert.Single(result);
             }
 
             [Fact]
@@ -52,7 +52,7 @@ namespace Octokit.Tests.Clients
 
                 var result = await client.GetContributors(1);
 
-                Assert.Equal(1, result.Count);
+                Assert.Single(result);
             }
 
             [Fact]
@@ -71,7 +71,7 @@ namespace Octokit.Tests.Clients
 
                 var result = await client.GetContributors("owner", "name", cancellationToken);
 
-                Assert.Equal(1, result.Count);
+                Assert.Single(result);
             }
 
             [Fact]
@@ -90,7 +90,7 @@ namespace Octokit.Tests.Clients
 
                 var result = await client.GetContributors(1, cancellationToken);
 
-                Assert.Equal(1, result.Count);
+                Assert.Single(result);
             }
 
             [Fact]
@@ -417,14 +417,14 @@ namespace Octokit.Tests.Clients
                 var expectedEndPoint = new Uri("repos/owner/name/stats/punch_card", UriKind.Relative);
 
                 var client = Substitute.For<IApiConnection>();
-                IReadOnlyList<int[]> data = new ReadOnlyCollection<int[]>(new[] { new[] { 2, 8, 42 } });
-                client.GetQueuedOperation<int[]>(expectedEndPoint, Args.CancellationToken)
+                IReadOnlyList<long[]> data = new ReadOnlyCollection<long[]>(new[] { new[] { 2L, 8, 42 } });
+                client.GetQueuedOperation<long[]>(expectedEndPoint, Args.CancellationToken)
                     .Returns(Task.FromResult(data));
                 var statisticsClient = new StatisticsClient(client);
 
                 var result = await statisticsClient.GetPunchCard("owner", "name");
 
-                Assert.Equal(1, result.PunchPoints.Count);
+                Assert.Single(result.PunchPoints);
                 Assert.Equal(DayOfWeek.Tuesday, result.PunchPoints[0].DayOfWeek);
                 Assert.Equal(8, result.PunchPoints[0].HourOfTheDay);
                 Assert.Equal(42, result.PunchPoints[0].CommitCount);
@@ -436,14 +436,14 @@ namespace Octokit.Tests.Clients
                 var expectedEndPoint = new Uri("repositories/1/stats/punch_card", UriKind.Relative);
 
                 var client = Substitute.For<IApiConnection>();
-                IReadOnlyList<int[]> data = new ReadOnlyCollection<int[]>(new[] { new[] { 2, 8, 42 } });
-                client.GetQueuedOperation<int[]>(expectedEndPoint, Args.CancellationToken)
+                IReadOnlyList<long[]> data = new ReadOnlyCollection<long[]>(new[] { new[] { 2L, 8, 42 } });
+                client.GetQueuedOperation<long[]>(expectedEndPoint, Args.CancellationToken)
                     .Returns(Task.FromResult(data));
                 var statisticsClient = new StatisticsClient(client);
 
                 var result = await statisticsClient.GetPunchCard(1);
 
-                Assert.Equal(1, result.PunchPoints.Count);
+                Assert.Single(result.PunchPoints);
                 Assert.Equal(DayOfWeek.Tuesday, result.PunchPoints[0].DayOfWeek);
                 Assert.Equal(8, result.PunchPoints[0].HourOfTheDay);
                 Assert.Equal(42, result.PunchPoints[0].CommitCount);
@@ -456,15 +456,15 @@ namespace Octokit.Tests.Clients
                 var cancellationToken = new CancellationToken();
 
                 var connection = Substitute.For<IApiConnection>();
-                IReadOnlyList<int[]> data = new ReadOnlyCollection<int[]>(new[] { new[] { 2, 8, 42 } });
+                IReadOnlyList<long[]> data = new ReadOnlyCollection<long[]>(new[] { new[] { 2L, 8, 42 } });
 
-                connection.GetQueuedOperation<int[]>(expectedEndPoint, cancellationToken)
+                connection.GetQueuedOperation<long[]>(expectedEndPoint, cancellationToken)
                     .Returns(Task.FromResult(data));
                 var client = new StatisticsClient(connection);
 
                 var result = await client.GetPunchCard("owner", "name", cancellationToken);
 
-                Assert.Equal(1, result.PunchPoints.Count);
+                Assert.Single(result.PunchPoints);
                 Assert.Equal(DayOfWeek.Tuesday, result.PunchPoints[0].DayOfWeek);
                 Assert.Equal(8, result.PunchPoints[0].HourOfTheDay);
                 Assert.Equal(42, result.PunchPoints[0].CommitCount);
@@ -477,15 +477,15 @@ namespace Octokit.Tests.Clients
                 var cancellationToken = new CancellationToken();
 
                 var connection = Substitute.For<IApiConnection>();
-                IReadOnlyList<int[]> data = new ReadOnlyCollection<int[]>(new[] { new[] { 2, 8, 42 } });
+                IReadOnlyList<long[]> data = new ReadOnlyCollection<long[]>(new[] { new[] { 2L, 8, 42 } });
 
-                connection.GetQueuedOperation<int[]>(expectedEndPoint, cancellationToken)
+                connection.GetQueuedOperation<long[]>(expectedEndPoint, cancellationToken)
                     .Returns(Task.FromResult(data));
                 var client = new StatisticsClient(connection);
 
                 var result = await client.GetPunchCard(1, cancellationToken);
 
-                Assert.Equal(1, result.PunchPoints.Count);
+                Assert.Single(result.PunchPoints);
                 Assert.Equal(DayOfWeek.Tuesday, result.PunchPoints[0].DayOfWeek);
                 Assert.Equal(8, result.PunchPoints[0].HourOfTheDay);
                 Assert.Equal(42, result.PunchPoints[0].CommitCount);
@@ -502,6 +502,25 @@ namespace Octokit.Tests.Clients
                 await Assert.ThrowsAsync<ArgumentException>(() => client.GetPunchCard("", "name"));
                 await Assert.ThrowsAsync<ArgumentException>(() => client.GetPunchCard("owner", ""));
             }
+        }
+
+        [Fact]
+        public async Task HandlesGreatBigCountsIfGetQueuedOperationTemplateParameterIsLong()
+        {
+            var expectedEndPoint = new Uri("repos/owner/name/stats/punch_card", UriKind.Relative);
+
+            var client = Substitute.For<IApiConnection>();
+            IReadOnlyList<long[]> data = new ReadOnlyCollection<long[]>(new [] { new [] { 2L, 8L, 42424242424242L } });
+            client.GetQueuedOperation<long[]>(expectedEndPoint, Args.CancellationToken)
+                .Returns(Task.FromResult(data));
+            var statisticsClient = new StatisticsClient(client);
+
+            var result = await statisticsClient.GetPunchCard("owner", "name");
+
+            Assert.Single(result.PunchPoints);
+            Assert.Equal(DayOfWeek.Tuesday, result.PunchPoints[0].DayOfWeek);
+            Assert.Equal(8, result.PunchPoints[0].HourOfTheDay);
+            Assert.Equal(42424242424242L, result.PunchPoints[0].CommitCount);
         }
     }
 }

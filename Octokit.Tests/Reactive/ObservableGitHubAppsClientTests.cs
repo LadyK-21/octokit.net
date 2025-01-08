@@ -86,8 +86,7 @@ namespace Octokit.Tests.Clients
 
                 connection.Received().Get<List<Installation>>(
                     Arg.Is<Uri>(u => u.ToString() == "app/installations"),
-                    Args.EmptyDictionary,
-                    "application/vnd.github.machine-man-preview+json");
+                    Args.EmptyDictionary);
             }
 
             [Fact]
@@ -108,8 +107,7 @@ namespace Octokit.Tests.Clients
                     Arg.Is<Uri>(u => u.ToString() == "app/installations"),
                     Arg.Is<Dictionary<string, string>>(x =>
                             x.Count == 1
-                            && x["per_page"] == "1"),
-                    "application/vnd.github.machine-man-preview+json");
+                            && x["per_page"] == "1"));
             }
         }
 
@@ -140,8 +138,7 @@ namespace Octokit.Tests.Clients
 
                 connection.Received().Get<List<InstallationsResponse>>(
                     Arg.Is<Uri>(u => u.ToString() == "user/installations"),
-                    null,
-                    "application/vnd.github.machine-man-preview+json");
+                    null);
             }
 
             [Fact]
@@ -162,8 +159,7 @@ namespace Octokit.Tests.Clients
                     Arg.Is<Uri>(u => u.ToString() == "user/installations"),
                     Arg.Is<Dictionary<string, string>>(x =>
                             x.Count == 1
-                            && x["per_page"] == "1"),
-                    "application/vnd.github.machine-man-preview+json");
+                            && x["per_page"] == "1"));
             }
         }
 
@@ -289,6 +285,38 @@ namespace Octokit.Tests.Clients
                 client.GetUserInstallationForCurrent("ducks");
 
                 gitHubClient.GitHubApps.Received().GetUserInstallationForCurrent("ducks");
+            }
+        }
+
+        public class TheCreateAppFromManifestMethod
+        {
+            [Fact]
+            public void EnsuresNonNullArguments()
+            {
+                var gitHubClient = Substitute.For<IGitHubClient>();
+                var client = new ObservableGitHubAppsClient(gitHubClient);
+
+                Assert.Throws<ArgumentNullException>(() => client.CreateAppFromManifest(null));
+            }
+
+            [Fact]
+            public void EnsuresNonEmptyArguments()
+            {
+                var gitHubClient = Substitute.For<IGitHubClient>();
+                var client = new ObservableGitHubAppsClient(gitHubClient);
+
+                Assert.Throws<ArgumentException>(() => client.CreateAppFromManifest(""));
+            }
+
+            [Fact]
+            public void GetsFromCorrectUrl()
+            {
+                var gitHubClient = Substitute.For<IGitHubClient>();
+                var client = new ObservableGitHubAppsClient(gitHubClient);
+
+                client.CreateAppFromManifest("abc123");
+
+                gitHubClient.GitHubApps.Received().CreateAppFromManifest("abc123");
             }
         }
     }

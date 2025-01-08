@@ -11,8 +11,8 @@ public class ProjectsClientTests
 {
     public class TheGetAllForRepositoryMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheGetAllForRepositoryMethod()
         {
@@ -59,7 +59,7 @@ public class ProjectsClientTests
 
             var projects = await _github.Repository.Project.GetAllForRepository(_context.RepositoryOwner, _context.RepositoryName, new ProjectRequest(ItemStateFilter.Closed));
 
-            Assert.Equal(1, projects.Count);
+            Assert.Single(projects);
             Assert.True(projects.FirstOrDefault(x => x.Name == project2.Name).Id == project2.Id);
         }
 
@@ -74,7 +74,7 @@ public class ProjectsClientTests
 
             var projects = await _github.Repository.Project.GetAllForRepository(_context.RepositoryId, new ProjectRequest(ItemStateFilter.Closed));
 
-            Assert.Equal(1, projects.Count);
+            Assert.Single(projects);
             Assert.True(projects.FirstOrDefault(x => x.Name == project2.Name).Id == project2.Id);
         }
 
@@ -92,7 +92,7 @@ public class ProjectsClientTests
 
             var projects = await _github.Repository.Project.GetAllForRepository(_context.RepositoryOwner, _context.RepositoryName, options);
 
-            Assert.Equal(1, projects.Count);
+            Assert.Single(projects);
             Assert.Equal(project1.Id, projects[0].Id);
         }
 
@@ -110,7 +110,7 @@ public class ProjectsClientTests
 
             var projects = await _github.Repository.Project.GetAllForRepository(_context.RepositoryId, options);
 
-            Assert.Equal(1, projects.Count);
+            Assert.Single(projects);
             Assert.Equal(project1.Id, projects[0].Id);
         }
 
@@ -129,7 +129,7 @@ public class ProjectsClientTests
 
             var projects = await _github.Repository.Project.GetAllForRepository(_context.RepositoryOwner, _context.RepositoryName, options);
 
-            Assert.Equal(1, projects.Count);
+            Assert.Single(projects);
             Assert.Equal(project2.Id, projects[0].Id);
         }
 
@@ -148,7 +148,7 @@ public class ProjectsClientTests
 
             var projects = await _github.Repository.Project.GetAllForRepository(_context.RepositoryId, options);
 
-            Assert.Equal(1, projects.Count);
+            Assert.Single(projects);
             Assert.Equal(project2.Id, projects[0].Id);
         }
 
@@ -213,7 +213,7 @@ public class ProjectsClientTests
 
     public class TheGetAllForOrganizationMethod
     {
-        IGitHubClient _github;
+        readonly IGitHubClient _github;
 
         public TheGetAllForOrganizationMethod()
         {
@@ -286,8 +286,8 @@ public class ProjectsClientTests
 
     public class TheGetMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheGetMethod()
         {
@@ -317,8 +317,8 @@ public class ProjectsClientTests
 
     public class TheUpdateMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheUpdateMethod()
         {
@@ -355,8 +355,8 @@ public class ProjectsClientTests
 
     public class TheDeleteMethod : IDisposable
     {
-        IGitHubClient _github;
-        RepositoryContext _context;
+        readonly IGitHubClient _github;
+        readonly RepositoryContext _context;
 
         public TheDeleteMethod()
         {

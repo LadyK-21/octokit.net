@@ -22,18 +22,17 @@ namespace Octokit
         /// <remarks>https://developer.github.com/v3/reactions/#create-reaction-for-a-commit-comment</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The comment id</param>
+        /// <param name="commentId">The comment id</param>
         /// <param name="reaction">The reaction to create</param>
         /// <returns></returns>
-        [Preview("squirrel-girl")]
         [ManualRoute("POST", "/repos/{owner}/{repo}/comments/{comment_id}/reactions")]
-        public Task<Reaction> Create(string owner, string name, int number, NewReaction reaction)
+        public Task<Reaction> Create(string owner, string name, long commentId, NewReaction reaction)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNull(reaction, nameof(reaction));
 
-            return ApiConnection.Post<Reaction>(ApiUrls.CommitCommentReactions(owner, name, number), reaction, AcceptHeaders.ReactionsPreview);
+            return ApiConnection.Post<Reaction>(ApiUrls.CommitCommentReactions(owner, name, commentId), reaction);
         }
 
         /// <summary>
@@ -41,16 +40,15 @@ namespace Octokit
         /// </summary>
         /// <remarks>https://developer.github.com/v3/reactions/#create-reaction-for-a-commit-comment</remarks>
         /// <param name="repositoryId">The owner of the repository</param>
-        /// <param name="number">The comment id</param>
+        /// <param name="commentId">The comment id</param>
         /// <param name="reaction">The reaction to create</param>
         /// <returns></returns>
-        [Preview("squirrel-girl")]
         [ManualRoute("POST", "/repositories/{id}/comments/{comment_id}/reactions")]
-        public Task<Reaction> Create(long repositoryId, int number, NewReaction reaction)
+        public Task<Reaction> Create(long repositoryId, long commentId, NewReaction reaction)
         {
             Ensure.ArgumentNotNull(reaction, nameof(reaction));
 
-            return ApiConnection.Post<Reaction>(ApiUrls.CommitCommentReactions(repositoryId, number), reaction, AcceptHeaders.ReactionsPreview);
+            return ApiConnection.Post<Reaction>(ApiUrls.CommitCommentReactions(repositoryId, commentId), reaction);
         }
 
         /// <summary>
@@ -59,12 +57,12 @@ namespace Octokit
         /// <remarks>https://developer.github.com/v3/reactions/#list-reactions-for-a-commit-comment</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The comment id</param>
+        /// <param name="commentId">The comment id</param>
         /// <returns></returns>
         [ManualRoute("GET", "/repos/{owner}/{repo}/comments/{comment_id}/reactions")]
-        public Task<IReadOnlyList<Reaction>> GetAll(string owner, string name, int number)
+        public Task<IReadOnlyList<Reaction>> GetAll(string owner, string name, long commentId)
         {
-            return GetAll(owner, name, number, ApiOptions.None);
+            return GetAll(owner, name, commentId, ApiOptions.None);
         }
 
         /// <summary>
@@ -73,18 +71,17 @@ namespace Octokit
         /// <remarks>https://developer.github.com/v3/reactions/#list-reactions-for-a-commit-comment</remarks>
         /// <param name="owner">The owner of the repository</param>
         /// <param name="name">The name of the repository</param>
-        /// <param name="number">The comment id</param>
+        /// <param name="commentId">The comment id</param>
         /// <param name="options">Options for changing the API response</param>
         /// <returns></returns>
-        [Preview("squirrel-girl")]
         [ManualRoute("GET", "/repos/{owner}/{repo}/comments/{comment_id}/reactions")]
-        public Task<IReadOnlyList<Reaction>> GetAll(string owner, string name, int number, ApiOptions options)
+        public Task<IReadOnlyList<Reaction>> GetAll(string owner, string name, long commentId, ApiOptions options)
         {
             Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
             Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
             Ensure.ArgumentNotNull(options, nameof(options));
 
-            return ApiConnection.GetAll<Reaction>(ApiUrls.CommitCommentReactions(owner, name, number), null, AcceptHeaders.ReactionsPreview, options);
+            return ApiConnection.GetAll<Reaction>(ApiUrls.CommitCommentReactions(owner, name, commentId), null, options);
         }
 
         /// <summary>
@@ -92,12 +89,12 @@ namespace Octokit
         /// </summary>
         /// <remarks>https://developer.github.com/v3/reactions/#list-reactions-for-a-commit-comment</remarks>
         /// <param name="repositoryId">The owner of the repository</param>
-        /// <param name="number">The comment id</param>
+        /// <param name="commentId">The comment id</param>
         /// <returns></returns>
         [ManualRoute("GET", "/repositories/{id}/comments/{comment_id}/reactions")]
-        public Task<IReadOnlyList<Reaction>> GetAll(long repositoryId, int number)
+        public Task<IReadOnlyList<Reaction>> GetAll(long repositoryId, long commentId)
         {
-            return GetAll(repositoryId, number, ApiOptions.None);
+            return GetAll(repositoryId, commentId, ApiOptions.None);
         }
 
         /// <summary>
@@ -105,16 +102,47 @@ namespace Octokit
         /// </summary>
         /// <remarks>https://developer.github.com/v3/reactions/#list-reactions-for-a-commit-comment</remarks>
         /// <param name="repositoryId">The owner of the repository</param>
-        /// <param name="number">The comment id</param>
+        /// <param name="commentId">The comment id</param>
         /// <param name="options">Options for changing the API response</param>
         /// <returns></returns>
-        [Preview("squirrel-girl")]
         [ManualRoute("GET", "/repositories/{id}/comments/{comment_id}/reactions")]
-        public Task<IReadOnlyList<Reaction>> GetAll(long repositoryId, int number, ApiOptions options)
+        public Task<IReadOnlyList<Reaction>> GetAll(long repositoryId, long commentId, ApiOptions options)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
 
-            return ApiConnection.GetAll<Reaction>(ApiUrls.CommitCommentReactions(repositoryId, number), null, AcceptHeaders.ReactionsPreview, options);
+            return ApiConnection.GetAll<Reaction>(ApiUrls.CommitCommentReactions(repositoryId, commentId), null, options);
+        }
+
+        /// <summary>
+        /// Deletes a reaction for a specified Commit Comment
+        /// </summary>
+        /// <remarks>https://docs.github.com/rest/reactions#delete-a-commit-comment-reaction</remarks>
+        /// <param name="owner">The owner of the repository</param>
+        /// <param name="name">The name of the repository</param>
+        /// <param name="commentId">The comment id</param>
+        /// <param name="reactionId">The reaction id</param>
+        /// <returns></returns>
+        [ManualRoute("DELETE", "/repos/{owner}/{repo}/comments/{comment_id}/reactions/{reaction_id}")]
+        public Task Delete(string owner, string name, long commentId, long reactionId)
+        {
+            Ensure.ArgumentNotNullOrEmptyString(owner, nameof(owner));
+            Ensure.ArgumentNotNullOrEmptyString(name, nameof(name));
+
+            return ApiConnection.Delete(ApiUrls.CommitCommentReaction(owner, name, commentId, reactionId));
+        }
+
+        /// <summary>
+        /// Deletes a reaction for a specified Commit Comment
+        /// </summary>
+        /// <remarks>https://docs.github.com/rest/reactions#delete-a-commit-comment-reaction</remarks>
+        /// <param name="repositoryId">The owner of the repository</param>
+        /// <param name="commentId">The comment id</param>
+        /// <param name="reactionId">The reaction id</param>
+        /// <returns></returns>
+        [ManualRoute("DELETE", "/repositories/{id}/comments/{comment_id}/reactions/{reaction_id}")]
+        public Task Delete(long repositoryId, long commentId, long reactionId)
+        {
+            return ApiConnection.Delete(ApiUrls.CommitCommentReaction(repositoryId, commentId, reactionId));
         }
     }
 }
